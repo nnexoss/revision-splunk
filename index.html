@@ -8,133 +8,169 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;700&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,700;1,400&display=swap">
 <style>
-/* Layout : sommaire collant à gauche (desktop), colonne de lecture ~70ch ; chaque chapitre = notions → SPL → pièges → à retenir → quiz */
+/* Mise en page de manuel : sommaire discret à gauche, colonne de lecture ~66 caractères, 18 px, interligne 1,7.
+   Une seule couleur d'accent (vert-gris sobre), encadrés par rôle avec simple filet gauche, code sur fond gris clair. */
 :root{
-  --bg:#f6f7f9; --surface:#ffffff; --fg:#1b2230; --muted:#5b6476; --line:#dde1e8;
-  --accent:#1f5fbf; --accent-soft:#e6eefb; --amber:#a35c00; --amber-soft:#fff3df;
-  --red:#b3261e; --red-soft:#fdecea; --ok:#1d7a46; --ok-soft:#e5f4ea;
-  --code-bg:#0f1724; --code-fg:#dbe4f3; --c-cmd:#7cc4ff; --c-kw:#ffb86b; --c-str:#a5e3a0; --c-pipe:#8592a8;
-  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --f-mono:"JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+  --bg:#ffffff; --surface:#f6f7f7; --fg:#1d2124; --muted:#5a6168; --line:#e2e5e7;
+  --accent:#2d6a62; --accent-soft:#eef5f3;
+  --note-key:#2d6a62; --note-warn:#a3361f; --note-tp:#8a5a00;
+  --warn-soft:#fbf1ee; --tp-soft:#fbf6ea; --ok:#2e7d4f; --ok-soft:#edf6f0; --red:#a3361f; --red-soft:#fbf1ee;
+  --code-bg:#f3f4f5; --code-fg:#1d2124; --c-cmd:#1d2124; --c-kw:#2d6a62; --c-str:#7a4a12; --c-pipe:#8a9198; --c-cm:#6b7279;
+  --f-body:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,"Segoe UI",Arial,sans-serif;
+  --f-mono:"Atkinson Hyperlegible Mono",ui-monospace,"DejaVu Sans Mono",Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#11151c; --surface:#181e28; --fg:#e4e8ef; --muted:#9aa4b6; --line:#2a3240;
-  --accent:#7fb0ff; --accent-soft:#1c2a42; --amber:#f0b25c; --amber-soft:#2e2414;
-  --red:#ff8a80; --red-soft:#3a1d1b; --ok:#6fd39a; --ok-soft:#163222;
-  --code-bg:#0a0e15; color-scheme:dark}}
+  --bg:#17191b; --surface:#1f2225; --fg:#e6e8ea; --muted:#a3aab1; --line:#2f3336;
+  --accent:#7cc0b4; --accent-soft:#1d2a28;
+  --note-key:#7cc0b4; --note-warn:#f0937c; --note-tp:#e3b55c;
+  --warn-soft:#2a1f1c; --tp-soft:#29241a; --ok:#79c79a; --ok-soft:#1b2a21; --red:#f0937c; --red-soft:#2a1f1c;
+  --code-bg:#202326; --code-fg:#e6e8ea; --c-cmd:#ffffff; --c-kw:#7cc0b4; --c-str:#e3b55c; --c-pipe:#7d858c; --c-cm:#9aa1a8;
+  color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#11151c; --surface:#181e28; --fg:#e4e8ef; --muted:#9aa4b6; --line:#2a3240;
-  --accent:#7fb0ff; --accent-soft:#1c2a42; --amber:#f0b25c; --amber-soft:#2e2414;
-  --red:#ff8a80; --red-soft:#3a1d1b; --ok:#6fd39a; --ok-soft:#163222;
-  --code-bg:#0a0e15; color-scheme:dark}
+  --bg:#17191b; --surface:#1f2225; --fg:#e6e8ea; --muted:#a3aab1; --line:#2f3336;
+  --accent:#7cc0b4; --accent-soft:#1d2a28;
+  --note-key:#7cc0b4; --note-warn:#f0937c; --note-tp:#e3b55c;
+  --warn-soft:#2a1f1c; --tp-soft:#29241a; --ok:#79c79a; --ok-soft:#1b2a21; --red:#f0937c; --red-soft:#2a1f1c;
+  --code-bg:#202326; --code-fg:#e6e8ea; --c-cmd:#ffffff; --c-kw:#7cc0b4; --c-str:#e3b55c; --c-pipe:#7d858c; --c-cm:#9aa1a8;
+  color-scheme:dark}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--f-body);
+body{background:var(--bg);color:var(--fg);font:18px/1.7 var(--f-body);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:48px;padding-block:32px 80px}
-@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px}}
-nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
-@media (max-width:900px){nav.toc{position:static;max-height:none}}
-.toc h2{font:800 13px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
-.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
-.toc a{display:flex;gap:8px;align-items:baseline;padding:5px 8px;border-radius:6px;color:var(--fg);text-decoration:none}
-.toc a:hover,.toc a:focus-visible{background:var(--accent-soft)}
-.toc .n{font:600 12px var(--f-mono);color:var(--muted);min-width:22px}
+@media (max-width:520px){body{font-size:17px}}
+a{color:var(--accent);text-underline-offset:3px}
+strong{font-weight:700}
+
+/* Structure */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:240px minmax(0,1fr);gap:64px;padding-block:48px 96px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:32px;padding-block:32px 72px}}
+main{min-width:0;max-width:66ch}
+.qwrap{max-width:720px;margin:0 auto;padding-block:48px 96px}
+
+/* Sommaire */
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;max-height:calc(100vh - 48px);overflow:auto;font-size:15px;line-height:1.4}
+@media (max-width:900px){nav.toc{position:static;max-height:none;border-bottom:1px solid var(--line);padding-bottom:24px}}
+.toc h2{font-size:15px;font-weight:700;margin:0 0 12px;color:var(--fg)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc li{margin:0}
+.toc a{display:flex;gap:10px;align-items:baseline;padding:6px 8px;border-radius:4px;color:var(--fg);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{background:var(--surface)}
+.toc .n{font:14px var(--f-mono);color:var(--muted);min-width:22px}
 .toc a.done .t{color:var(--muted);text-decoration:line-through}
-.progress{margin:14px 0 6px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.toc li.sep{font-size:13px;font-weight:700;color:var(--muted);padding:18px 8px 6px}
+.progress{margin:18px 0 6px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
 .progress span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
-.ptext{font-size:13px;color:var(--muted)}
-main{min-width:0;max-width:74ch}
-header.hero{padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:8px}
-.eyebrow{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-h1{font:800 clamp(34px,5vw,52px)/1.05 var(--f-display);margin:8px 0 14px;text-wrap:balance;letter-spacing:-.01em}
-.lede{font-size:18px;color:var(--muted);margin:0}
-.searchbar{margin-top:20px;display:flex;align-items:center;gap:10px;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:12px 14px;font:14px var(--f-mono);overflow-x:auto;white-space:nowrap}
-.searchbar b{color:var(--c-cmd);font-weight:600}
-.searchbar .tr{margin-left:auto;color:var(--c-pipe);font-size:12px;border:1px solid #2b3648;border-radius:4px;padding:2px 8px}
-section.ch{padding-top:48px;scroll-margin-top:16px}
-.chhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.chnum{font:600 14px var(--f-mono);color:var(--accent)}
-h2{font:800 30px/1.15 var(--f-display);margin:4px 0 6px;text-wrap:balance}
-.src{font-size:13px;color:var(--muted);margin:0 0 18px}
-.learned{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
-.learned input{accent-color:var(--ok);width:16px;height:16px}
-h3{font:600 19px/1.3 var(--f-display);margin:28px 0 8px}
-p{margin:0 0 12px}
-ul,ol.steps{margin:0 0 14px;padding-left:22px}
-li{margin:3px 0}
-code{font:0.88em var(--f-mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
-.codebox{position:relative;margin:10px 0 16px}
-pre.spl{margin:0;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:14px 16px;font:13.5px/1.6 var(--f-mono);overflow-x:auto;white-space:pre-wrap;word-break:break-word}
-pre.spl .cmd{color:var(--c-cmd);font-weight:600}
-pre.spl .kw{color:var(--c-kw)}
+.ptext{font-size:14px;color:var(--muted)}
+
+/* En-tête */
+header.hero{padding-bottom:32px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:15px;color:var(--muted)}
+h1{font-size:clamp(34px,5vw,44px);line-height:1.15;font-weight:700;margin:8px 0 16px;text-wrap:balance}
+.lede{font-size:19px;color:var(--fg);margin:0 0 12px}
+.searchbar{display:none}
+
+/* Chapitres */
+section.ch{padding-top:80px;scroll-margin-top:24px}
+.chhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chnum{font:15px var(--f-mono);color:var(--muted)}
+h2{font-size:32px;line-height:1.2;font-weight:700;margin:6px 0 8px;text-wrap:balance}
+.src{font-size:15px;color:var(--muted);margin:0 0 20px}
+.goals{background:var(--surface);border-radius:6px;padding:16px 20px;margin:0 0 8px}
+.goals p{margin:0 0 6px;font-weight:700}
+.goals ul{margin:0;padding-left:22px}
+.learned{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--muted);cursor:pointer;user-select:none}
+.learned input{accent-color:var(--ok);width:18px;height:18px}
+.hors{font-size:13px;color:var(--note-tp);border:1px solid currentColor;border-radius:4px;padding:1px 8px}
+h3{font-size:22px;line-height:1.3;font-weight:700;margin:44px 0 12px}
+p{margin:0 0 1em}
+ul,ol.steps{margin:0 0 1.2em;padding-left:24px}
+li{margin:8px 0}
+li::marker{color:var(--muted)}
+code{font:0.9em var(--f-mono);background:var(--code-bg);padding:2px 6px;border-radius:4px;overflow-wrap:anywhere}
+
+/* Code */
+.codebox{position:relative;margin:16px 0 24px}
+pre.spl{margin:0;background:var(--code-bg);color:var(--code-fg);border-radius:6px;padding:18px 84px 18px 20px;font:15.5px/1.75 var(--f-mono);overflow-x:auto;white-space:pre-wrap;word-break:break-word;border:1px solid var(--line)}
+pre.spl .cmd{color:var(--c-cmd);font-weight:700}
+pre.spl .kw{color:var(--c-kw);font-weight:700}
 pre.spl .str{color:var(--c-str)}
 pre.spl .pipe{color:var(--c-pipe)}
-pre.spl .cm{color:#7d8aa0;font-style:italic}
-.copy{position:absolute;top:8px;right:8px;font:600 11px var(--f-body);background:#243047;color:#cfd9ea;border:0;border-radius:4px;padding:4px 8px;cursor:pointer;opacity:.85}
-.copy:hover,.copy:focus-visible{opacity:1;outline:2px solid var(--c-cmd)}
-.tbl{overflow-x:auto;margin:10px 0 16px}
-table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
-th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:600;color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+pre.spl .cm{color:var(--c-cm);font-style:normal}
+.copy{position:absolute;top:8px;right:8px;font:14px var(--f-body);background:var(--bg);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:3px 10px;cursor:pointer}
+.copy:hover,.copy:focus-visible{color:var(--fg);outline:2px solid var(--accent)}
+
+/* Tableaux */
+.tbl{overflow-x:auto;margin:16px 0 24px}
+table{border-collapse:collapse;width:100%;font-size:16px;line-height:1.5;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--fg);border-bottom:2px solid var(--line)}
 td code{white-space:nowrap}
-.note{border-radius:8px;padding:12px 16px;margin:14px 0}
+
+/* Encadrés : un rôle = un libellé + un filet de couleur */
+.note{padding:16px 20px;margin:24px 0;border-left:4px solid;background:var(--surface)}
 .note > :last-child{margin-bottom:0}
-.note strong.lbl{display:block;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
-.retenir{background:var(--accent-soft)} .retenir strong.lbl{color:var(--accent)}
-.piege{background:var(--red-soft)} .piege strong.lbl{color:var(--red)}
-.tp{background:var(--amber-soft)} .tp strong.lbl{color:var(--amber)}
-.quiz{margin-top:22px;border-top:1px dashed var(--line);padding-top:14px}
-.quiz h3{margin-top:0}
-details{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin:8px 0}
-summary{cursor:pointer;padding:10px 14px;font-weight:600}
-summary:focus-visible{outline:2px solid var(--accent);border-radius:8px}
-details > div{padding:0 14px 12px;color:var(--fg)}
-details[open] summary{color:var(--accent)}
-.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 16px;margin:8px 0 14px}
-.kv dt{font:600 14px var(--f-mono)} .kv dd{margin:0}
-@media (max-width:520px){.kv{grid-template-columns:minmax(0,1fr)}.kv dd{margin-bottom:6px}}
-.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 16px;font-size:14px}
-.flow span{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+.note strong.lbl{display:block;font-size:16px;font-weight:700;margin-bottom:6px}
+.retenir{border-color:var(--note-key);background:var(--accent-soft)} .retenir strong.lbl{color:var(--note-key)}
+.piege{border-color:var(--note-warn);background:var(--warn-soft)} .piege strong.lbl{color:var(--note-warn)}
+.tp{border-color:var(--note-tp);background:var(--tp-soft)} .tp strong.lbl{color:var(--note-tp)}
+.note ul{margin-bottom:0}
+
+/* Définitions et étapes */
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:12px 20px;margin:16px 0 24px}
+.kv dt{font-weight:700}
+.kv dd{margin:0}
+@media (max-width:560px){.kv{grid-template-columns:minmax(0,1fr);gap:2px}.kv dd{margin-bottom:12px}}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 24px;font-size:16px}
+.flow span{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:6px 12px}
 .flow i{color:var(--muted);font-style:normal}
-.toc li.sep{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 8px 4px}
-.hors{font:600 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);border-radius:4px;padding:2px 8px}
-.part{margin-top:64px;padding:20px 22px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
-.part h2{margin-top:6px}
-.part p{margin:0;color:var(--muted)}
-.qcm-controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin:6px 0 18px}
-.qcm-controls label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
-select{font:15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px;max-width:100%}
-.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+
+/* Quiz de chapitre */
+.quiz{margin-top:40px;padding-top:24px;border-top:1px solid var(--line)}
+.quiz h3{margin-top:0}
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;padding:12px 0;font-weight:700}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details > div{padding:0 0 16px 20px}
+details[open] summary{color:var(--accent)}
+
+/* Blocs de partie */
+.part{margin-top:96px;padding:28px 0 0;border-top:3px solid var(--fg)}
+.part h2{margin-top:4px}
+.part p{color:var(--fg)}
+.qlink{margin:20px 0 0}
+
+/* Boutons et QCM */
+.btn{display:inline-block;font:700 16px var(--f-body);border-radius:6px;padding:10px 18px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-decoration:none}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
-.btn:focus-visible,select:focus-visible,.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.qcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
-.qmeta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:600 12px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.qbar{height:4px;background:var(--line);border-radius:2px;margin:10px 0 16px;overflow:hidden}
+.btn:focus-visible,select:focus-visible,.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.qcm-controls{display:flex;flex-wrap:wrap;gap:16px 20px;align-items:flex-end;margin:24px 0}
+.qcm-controls label{display:grid;gap:6px;font-size:15px;color:var(--muted)}
+select{font:17px var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;max-width:100%}
+.qcard{border:1px solid var(--line);border-radius:8px;padding:28px}
+@media (max-width:520px){.qcard{padding:20px 16px}}
+.qmeta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:15px;color:var(--muted)}
+.qbar{height:4px;background:var(--line);border-radius:2px;margin:12px 0 24px;overflow:hidden}
 .qbar span{display:block;height:100%;background:var(--accent)}
-.qtext{font:600 18px/1.45 var(--f-body);margin:0 0 14px}
-.opts{display:grid;gap:8px}
-.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:15px/1.45 var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;width:100%}
-.opt:hover:not(:disabled){border-color:var(--accent)}
-.opt .k{font:600 13px var(--f-mono);color:var(--muted);min-width:16px}
+.qtext{font-size:21px;line-height:1.45;font-weight:700;margin:0 0 20px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:14px;align-items:flex-start;text-align:left;font:18px/1.5 var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px 16px;cursor:pointer;width:100%}
+.opt:hover:not(:disabled){border-color:var(--fg)}
+.opt .k{font:700 16px var(--f-mono);color:var(--muted);min-width:18px}
 .opt:disabled{cursor:default}
-.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
-.opt.ko{border-color:var(--red);background:var(--red-soft)}
-.qexp{margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--accent-soft)}
+.opt.ok{border:2px solid var(--ok);background:var(--ok-soft)}
+.opt.ko{border:2px solid var(--red);background:var(--red-soft)}
+.qexp{margin-top:20px;padding:16px 20px;border-left:4px solid var(--line);background:var(--surface)}
 .qexp b.ok{color:var(--ok)} .qexp b.ko{color:var(--red)}
-.qnav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:14px;color:var(--muted)}
-.score{font:800 44px/1 var(--f-display);margin:6px 0 4px}
-.review{margin-top:16px;display:grid;gap:10px}
-.review div{border-top:1px solid var(--line);padding-top:10px;font-size:14.5px}
-.review .q{font-weight:600}
-.qlink{margin:16px 0 0}
-a.btn{display:inline-block;text-decoration:none}
-footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
-a{color:var(--accent)}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px;font-size:16px;color:var(--muted)}
+.score{font-size:48px;font-weight:700;line-height:1;margin:12px 0 8px}
+.review{margin-top:28px;display:grid;gap:4px}
+.review div{border-top:1px solid var(--line);padding-top:14px;font-size:17px}
+.review .q{font-weight:700;margin-bottom:4px}
+.back{font-size:16px}
+footer{margin-top:96px;padding-top:20px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
 </style>
 
 <div class="wrap">
@@ -176,7 +212,6 @@ a{color:var(--accent)}
   <h1>Cours Splunk Fundamentals</h1>
   <p class="lede">Tout ce qu'il faut savoir pour le TP noté (modules 3 à 13) et le QCM, construit à partir de tes supports : les labs Splunk Fundamentals 1, le guide de référence rapide, la présentation du cours et les notes du prof. Les résultats attendus ont été vérifiés sur tes fichiers de données. Les chapitres 13 à 18 complètent avec le Learning Path de Splunk Academy, hors supports.</p>
   <p class="qlink"><a class="btn primary" href="qcm.html">Faire le QCM (164 questions)</a></p>
-  <div class="searchbar"><span>index=main sourcetype=access_combined_wcookie status=200 file=success.do | <b>top</b> productId limit=5</span><span class="tr">Tout le temps</span></div>
 </header>
 
 <!-- ============ 00 ============ -->
@@ -184,6 +219,7 @@ a{color:var(--accent)}
   <div class="chhead"><span class="chnum">00</span><label class="learned"><input type="checkbox" data-ch="ch0" id="l-ch0"> Appris</label></div>
   <h2>L'évaluation et le contexte Splunk</h2>
   <p class="src">Sources : Evaluation_Partie_Splunk.md, Presentation_Splunk_Cours_v2.pdf</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>expliquer comment se déroulent le TP noté et le partiel</li><li>citer les licences Splunk et les règles du partenariat</li></ul></div>
 
   <h3>Les deux épreuves</h3>
   <dl class="kv">
@@ -223,6 +259,7 @@ a{color:var(--accent)}
   <div class="chhead"><span class="chnum">01</span><label class="learned"><input type="checkbox" data-ch="ch1" id="l-ch1"> Appris</label></div>
   <h2>Concepts et architecture</h2>
   <p class="src">Sources : splunk-quick-reference-guide.pdf, module 7</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>définir event, index, host, source et sourcetype</li><li>distinguer forwarder, indexer et search head</li></ul></div>
 
   <h3>Le vocabulaire de base</h3>
   <dl class="kv">
@@ -267,6 +304,7 @@ a{color:var(--accent)}
   <div class="chhead"><span class="chnum">02</span><label class="learned"><input type="checkbox" data-ch="ch2" id="l-ch2"> Appris</label></div>
   <h2>Installer et démarrer Splunk</h2>
   <p class="src">Sources : module 3, Notes_TP1_Prof.md</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>démarrer et arrêter Splunk sans être root</li><li>créer un utilisateur avec le rôle power</li></ul></div>
 
   <h3>Installation sous Linux (pour comprendre)</h3>
   <div class="codebox"><pre class="spl"># Paquet .deb (en root)
@@ -336,6 +374,7 @@ sudo -H -u splunk /opt/splunk/bin/splunk status</pre></div>
   <div class="chhead"><span class="chnum">03</span><label class="learned"><input type="checkbox" data-ch="ch3" id="l-ch3"> Appris</label></div>
   <h2>Ingérer les données</h2>
   <p class="src">Source : module 4</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>importer un fichier avec le bon sourcetype et le bon host</li><li>expliquer pourquoi il faut chercher sur All time</li></ul></div>
 
   <h3>Les trois méthodes d'Add Data</h3>
   <ul>
@@ -379,6 +418,7 @@ sudo -H -u splunk /opt/splunk/bin/splunk status</pre></div>
   <div class="chhead"><span class="chnum">04</span><label class="learned"><input type="checkbox" data-ch="ch4" id="l-ch4"> Appris</label></div>
   <h2>Rechercher</h2>
   <p class="src">Sources : modules 5 et 7, guide de référence</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>écrire une recherche avec mots-clés, jokers, phrases et booléens</li><li>utiliser la timeline, les modificateurs de temps et les jobs</li></ul></div>
 
   <h3>La structure d'une recherche SPL</h3>
   <p>SPL = <strong>Search Processing Language</strong>. Avant le premier pipe, il y a une commande <code>search</code> implicite qui va chercher les events dans l'index. Chaque <code>|</code> envoie le résultat à la commande suivante.</p>
@@ -453,6 +493,7 @@ fail* AND password "port 22"
   <div class="chhead"><span class="chnum">05</span><label class="learned"><input type="checkbox" data-ch="ch5" id="l-ch5"> Appris</label></div>
   <h2>Les champs</h2>
   <p class="src">Sources : modules 6 et 7</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>filtrer une recherche avec des champs</li><li>expliquer la différence entre != et NOT</li></ul></div>
 
   <h3>La barre latérale des champs</h3>
   <dl class="kv">
@@ -502,6 +543,7 @@ sourcetype=access* (referer_domain=*.cn OR referer_domain=*.hk)</pre></div>
   <div class="chhead"><span class="chnum">06</span><label class="learned"><input type="checkbox" data-ch="ch6" id="l-ch6"> Appris</label></div>
   <h2>Commandes de base</h2>
   <p class="src">Sources : modules 7 et 8</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>mettre en forme des résultats avec fields, table, rename, sort et dedup</li></ul></div>
 
   <div class="tbl"><table>
     <tr><th>Commande</th><th>Rôle</th><th>Exemple</th></tr>
@@ -549,6 +591,7 @@ index=main sourcetype=access_combined_wcookie action=purchase status=200 file=su
   <div class="chhead"><span class="chnum">07</span><label class="learned"><input type="checkbox" data-ch="ch7" id="l-ch7"> Appris</label></div>
   <h2>Commandes transformantes</h2>
   <p class="src">Sources : module 9, guide de référence</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>produire des statistiques avec top, rare et stats</li><li>choisir la bonne fonction de stats</li></ul></div>
 
   <p>Une commande <strong>transformante</strong> transforme les events en <strong>tableau statistique</strong>. Ce sont elles qui alimentent les onglets <strong>Statistics</strong> et <strong>Visualization</strong> : <code>top</code>, <code>rare</code>, <code>stats</code>, <code>chart</code>, <code>timechart</code>. La doc Splunk classe aussi <code>table</code> parmi elles.</p>
 
@@ -631,6 +674,7 @@ index=main sourcetype=access_combined_wcookie | stats values(useragent) as "Agen
   <div class="chhead"><span class="chnum">08</span><label class="learned"><input type="checkbox" data-ch="ch8" id="l-ch8"> Appris</label></div>
   <h2>Rapports et dashboards</h2>
   <p class="src">Source : module 10</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>enregistrer une recherche comme rapport</li><li>construire un dashboard avec plusieurs panneaux</li></ul></div>
 
   <h3>Les rapports (reports)</h3>
   <p>Un rapport est une <strong>recherche sauvegardée</strong> (ou un pivot). On peut le lancer à la demande, le <strong>planifier</strong>, déclencher des alertes et l'ajouter à un dashboard.</p>
@@ -681,6 +725,7 @@ index=main sourcetype=access_combined_wcookie file=success.do status=200 | stats
   <div class="chhead"><span class="chnum">09</span><label class="learned"><input type="checkbox" data-ch="ch9" id="l-ch9"> Appris</label></div>
   <h2>Pivot et Data Models</h2>
   <p class="src">Sources : module 11, guide de référence</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>construire un tableau ou un graphique avec Pivot</li><li>expliquer le lien entre Pivot et Data Model</li></ul></div>
 
   <dl class="kv">
     <dt>Data Model</dt><dd>Collection <strong>hiérarchique</strong> de <strong>datasets</strong>. C'est elle que Pivot utilise pour générer des rapports.</dd>
@@ -714,6 +759,7 @@ index=main sourcetype=access_combined_wcookie file=success.do status=200 | stats
   <div class="chhead"><span class="chnum">10</span><label class="learned"><input type="checkbox" data-ch="ch10" id="l-ch10"> Appris</label></div>
   <h2>Lookups</h2>
   <p class="src">Source : module 12</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>créer un lookup en trois étapes</li><li>utiliser lookup et inputlookup dans une recherche</li></ul></div>
 
   <p>Un lookup <strong>ajoute des champs aux events depuis une source externe</strong>, typiquement un fichier CSV. Ici : les données web n'ont que le <code>productId</code>, et <code>products.csv</code> apporte le nom (<code>product_name</code>) et le prix (<code>price</code>).</p>
 
@@ -757,6 +803,7 @@ index=main sourcetype=access_combined_wcookie file=success.do status=200
   <div class="chhead"><span class="chnum">11</span><label class="learned"><input type="checkbox" data-ch="ch11" id="l-ch11"> Appris</label></div>
   <h2>Alertes</h2>
   <p class="src">Source : module 13</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>créer, régler et tester une alerte</li></ul></div>
 
   <p>Une alerte est une recherche sauvegardée qui se <strong>déclenche quand les résultats remplissent une condition</strong>, puis lance des <strong>actions</strong>. Elle peut porter sur des recherches planifiées ou en temps réel.</p>
   <div class="note piege"><strong class="lbl">Attention</strong><p>Les alertes <strong>ne fonctionnent pas avec la licence Free</strong>. Il faut la licence d'essai (Trial) ou une vraie licence, et le compte admin pour ce lab.</p></div>
@@ -800,6 +847,7 @@ index=main sourcetype=access_combined_wcookie file=success.do status=200
   <div class="chhead"><span class="chnum">12</span><label class="learned"><input type="checkbox" data-ch="ch12" id="l-ch12"> Appris</label></div>
   <h2>Aller plus loin en SPL</h2>
   <p class="src">Source : splunk-quick-reference-guide.pdf (autorisé au TP)</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>utiliser eval, where, timechart et les sous-recherches</li><li>appliquer les règles d'optimisation</li></ul></div>
 
   <h3>Commandes utiles en plus</h3>
   <div class="tbl"><table>
@@ -863,6 +911,7 @@ index=main sourcetype=access_combined_wcookie status>=400 | stats count by statu
   <div class="chhead"><span class="chnum">13</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp1" id="l-lp1"> Appris</label></div>
   <h2>Planifier rapports et alertes</h2>
   <p class="src">Cours du parcours : Scheduling Reports &amp; Alerts</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>planifier un rapport et lire une expression cron</li><li>choisir entre alerte planifiée et alerte temps réel</li></ul></div>
 
   <h3>Planifier un rapport</h3>
   <p>Un rapport planifié s'exécute tout seul à intervalle régulier. C'est aussi le moyen de <strong>garder des résultats plus de 7 jours</strong>, et il est indispensable pour envoyer un rapport par mail.</p>
@@ -921,6 +970,7 @@ index=main sourcetype=access_combined_wcookie status>=400 | stats count by statu
   <div class="chhead"><span class="chnum">14</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp2" id="l-lp2"> Appris</label></div>
   <h2>Travailler avec le temps</h2>
   <p class="src">Cours du parcours : Working with Time</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>maîtriser earliest, latest, bin et timewrap</li><li>convertir des dates avec strftime et strptime</li></ul></div>
 
   <h3>Comment Splunk stocke le temps</h3>
   <ul>
@@ -974,6 +1024,7 @@ index=main sourcetype=access_combined_wcookie status>=400 | stats count by statu
   <div class="chhead"><span class="chnum">15</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp3" id="l-lp3"> Appris</label></div>
   <h2>Statistiques et visualisations</h2>
   <p class="src">Cours du parcours : Statistical Processing, Visualizations</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>choisir entre stats, chart et timechart</li><li>compléter tableaux et visualisations</li></ul></div>
 
   <h3><code>stats</code>, <code>chart</code> et <code>timechart</code></h3>
   <div class="tbl"><table>
@@ -1043,6 +1094,7 @@ index=main sourcetype=access_combined_wcookie status>=400 | stats count by statu
   <div class="chhead"><span class="chnum">16</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp4" id="l-lp4"> Appris</label></div>
   <h2>Sous-recherches et optimisation</h2>
   <p class="src">Cours du parcours : Leveraging Lookups and Subsearches, Search Optimization</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>écrire une sous-recherche et connaître ses limites</li><li>diagnostiquer une recherche lente avec le Job Inspector</li></ul></div>
 
   <h3>Les sous-recherches</h3>
   <ul>
@@ -1096,6 +1148,7 @@ index=main sourcetype=access_combined_wcookie NOT [ | inputlookup ip_autorisees.
   <div class="chhead"><span class="chnum">17</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp5" id="l-lp5"> Appris</label></div>
   <h2>Dashboards dynamiques</h2>
   <p class="src">Cours du parcours : Introduction to Dashboards, Dynamic Dashboards</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>ajouter des inputs et des tokens à un dashboard</li><li>configurer un drilldown</li></ul></div>
 
   <h3>Les deux types de dashboards</h3>
   <div class="tbl"><table>
@@ -1150,6 +1203,7 @@ index=main sourcetype=access_combined_wcookie | stats count by productId</pre></
   <div class="chhead"><span class="chnum">18</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp6" id="l-lp6"> Appris</label></div>
   <h2>Knowledge objects</h2>
   <p class="src">Cours du parcours : Intro to Knowledge Objects</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>reconnaître chaque type de knowledge object</li><li>connaître leur ordre d'application et leurs permissions</li></ul></div>
 
   <p>Les <strong>knowledge objects</strong> sont des objets créés par les utilisateurs pour donner du sens aux données et les réutiliser. Le <strong>Knowledge Manager</strong> les organise, les nomme et gère leurs permissions. Ils se gèrent dans <strong>Settings → Knowledge</strong> (Searches, reports and alerts, Event types, Tags, Fields, Lookups, Advanced search…).</p>
 
@@ -1206,6 +1260,7 @@ tag=serveur_web
   <div class="chhead"><span class="chnum">19</span><label class="learned"><input type="checkbox" data-ch="ch13" id="l-ch13"> Appris</label></div>
   <h2>Fiche du jour du TP</h2>
   <p class="src">Synthèse de tout le cours</p>
+  <div class="goals"><p>À la fin de ce chapitre, tu sais :</p><ul><li>dérouler le TP étape par étape</li><li>vérifier tes résultats avec les chiffres de référence</li></ul></div>
 
   <h3>La checklist</h3>
   <ol class="steps">
