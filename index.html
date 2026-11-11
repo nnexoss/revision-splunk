@@ -1,0 +1,1344 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Cours Splunk Fundamentals</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout : sommaire collant à gauche (desktop), colonne de lecture ~70ch ; chaque chapitre = notions → SPL → pièges → à retenir → quiz */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1b2230; --muted:#5b6476; --line:#dde1e8;
+  --accent:#1f5fbf; --accent-soft:#e6eefb; --amber:#a35c00; --amber-soft:#fff3df;
+  --red:#b3261e; --red-soft:#fdecea; --ok:#1d7a46; --ok-soft:#e5f4ea;
+  --code-bg:#0f1724; --code-fg:#dbe4f3; --c-cmd:#7cc4ff; --c-kw:#ffb86b; --c-str:#a5e3a0; --c-pipe:#8592a8;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151c; --surface:#181e28; --fg:#e4e8ef; --muted:#9aa4b6; --line:#2a3240;
+  --accent:#7fb0ff; --accent-soft:#1c2a42; --amber:#f0b25c; --amber-soft:#2e2414;
+  --red:#ff8a80; --red-soft:#3a1d1b; --ok:#6fd39a; --ok-soft:#163222;
+  --code-bg:#0a0e15; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151c; --surface:#181e28; --fg:#e4e8ef; --muted:#9aa4b6; --line:#2a3240;
+  --accent:#7fb0ff; --accent-soft:#1c2a42; --amber:#f0b25c; --amber-soft:#2e2414;
+  --red:#ff8a80; --red-soft:#3a1d1b; --ok:#6fd39a; --ok-soft:#163222;
+  --code-bg:#0a0e15; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:48px;padding-block:32px 80px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
+@media (max-width:900px){nav.toc{position:static;max-height:none}}
+.toc h2{font:800 13px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.toc a{display:flex;gap:8px;align-items:baseline;padding:5px 8px;border-radius:6px;color:var(--fg);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{background:var(--accent-soft)}
+.toc .n{font:600 12px var(--f-mono);color:var(--muted);min-width:22px}
+.toc a.done .t{color:var(--muted);text-decoration:line-through}
+.progress{margin:14px 0 6px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.ptext{font-size:13px;color:var(--muted)}
+main{min-width:0;max-width:74ch}
+header.hero{padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.eyebrow{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h1{font:800 clamp(34px,5vw,52px)/1.05 var(--f-display);margin:8px 0 14px;text-wrap:balance;letter-spacing:-.01em}
+.lede{font-size:18px;color:var(--muted);margin:0}
+.searchbar{margin-top:20px;display:flex;align-items:center;gap:10px;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:12px 14px;font:14px var(--f-mono);overflow-x:auto;white-space:nowrap}
+.searchbar b{color:var(--c-cmd);font-weight:600}
+.searchbar .tr{margin-left:auto;color:var(--c-pipe);font-size:12px;border:1px solid #2b3648;border-radius:4px;padding:2px 8px}
+section.ch{padding-top:48px;scroll-margin-top:16px}
+.chhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.chnum{font:600 14px var(--f-mono);color:var(--accent)}
+h2{font:800 30px/1.15 var(--f-display);margin:4px 0 6px;text-wrap:balance}
+.src{font-size:13px;color:var(--muted);margin:0 0 18px}
+.learned{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+.learned input{accent-color:var(--ok);width:16px;height:16px}
+h3{font:600 19px/1.3 var(--f-display);margin:28px 0 8px}
+p{margin:0 0 12px}
+ul,ol.steps{margin:0 0 14px;padding-left:22px}
+li{margin:3px 0}
+code{font:0.88em var(--f-mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+.codebox{position:relative;margin:10px 0 16px}
+pre.spl{margin:0;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:14px 16px;font:13.5px/1.6 var(--f-mono);overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+pre.spl .cmd{color:var(--c-cmd);font-weight:600}
+pre.spl .kw{color:var(--c-kw)}
+pre.spl .str{color:var(--c-str)}
+pre.spl .pipe{color:var(--c-pipe)}
+pre.spl .cm{color:#7d8aa0;font-style:italic}
+.copy{position:absolute;top:8px;right:8px;font:600 11px var(--f-body);background:#243047;color:#cfd9ea;border:0;border-radius:4px;padding:4px 8px;cursor:pointer;opacity:.85}
+.copy:hover,.copy:focus-visible{opacity:1;outline:2px solid var(--c-cmd)}
+.tbl{overflow-x:auto;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+td code{white-space:nowrap}
+.note{border-radius:8px;padding:12px 16px;margin:14px 0}
+.note > :last-child{margin-bottom:0}
+.note strong.lbl{display:block;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.retenir{background:var(--accent-soft)} .retenir strong.lbl{color:var(--accent)}
+.piege{background:var(--red-soft)} .piege strong.lbl{color:var(--red)}
+.tp{background:var(--amber-soft)} .tp strong.lbl{color:var(--amber)}
+.quiz{margin-top:22px;border-top:1px dashed var(--line);padding-top:14px}
+.quiz h3{margin-top:0}
+details{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin:8px 0}
+summary{cursor:pointer;padding:10px 14px;font-weight:600}
+summary:focus-visible{outline:2px solid var(--accent);border-radius:8px}
+details > div{padding:0 14px 12px;color:var(--fg)}
+details[open] summary{color:var(--accent)}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 16px;margin:8px 0 14px}
+.kv dt{font:600 14px var(--f-mono)} .kv dd{margin:0}
+@media (max-width:520px){.kv{grid-template-columns:minmax(0,1fr)}.kv dd{margin-bottom:6px}}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 16px;font-size:14px}
+.flow span{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+.flow i{color:var(--muted);font-style:normal}
+.toc li.sep{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 8px 4px}
+.hors{font:600 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);border-radius:4px;padding:2px 8px}
+.part{margin-top:64px;padding:20px 22px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.part h2{margin-top:6px}
+.part p{margin:0;color:var(--muted)}
+.qcm-controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin:6px 0 18px}
+.qcm-controls label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+select{font:15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px;max-width:100%}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.btn:focus-visible,select:focus-visible,.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.qmeta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:600 12px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.qbar{height:4px;background:var(--line);border-radius:2px;margin:10px 0 16px;overflow:hidden}
+.qbar span{display:block;height:100%;background:var(--accent)}
+.qtext{font:600 18px/1.45 var(--f-body);margin:0 0 14px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:15px/1.45 var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;width:100%}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .k{font:600 13px var(--f-mono);color:var(--muted);min-width:16px}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.ko{border-color:var(--red);background:var(--red-soft)}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--accent-soft)}
+.qexp b.ok{color:var(--ok)} .qexp b.ko{color:var(--red)}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:14px;color:var(--muted)}
+.score{font:800 44px/1 var(--f-display);margin:6px 0 4px}
+.review{margin-top:16px;display:grid;gap:10px}
+.review div{border-top:1px solid var(--line);padding-top:10px;font-size:14.5px}
+.review .q{font-weight:600}
+.qlink{margin:16px 0 0}
+a.btn{display:inline-block;text-decoration:none}
+footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Sommaire">
+  <h2>Sommaire</h2>
+  <ol id="toclist">
+    <li><a href="#ch0"><span class="n">00</span><span class="t">L'évaluation et Splunk</span></a></li>
+    <li><a href="#ch1"><span class="n">01</span><span class="t">Concepts et architecture</span></a></li>
+    <li><a href="#ch2"><span class="n">02</span><span class="t">Installer et démarrer</span></a></li>
+    <li><a href="#ch3"><span class="n">03</span><span class="t">Ingérer les données</span></a></li>
+    <li><a href="#ch4"><span class="n">04</span><span class="t">Rechercher</span></a></li>
+    <li><a href="#ch5"><span class="n">05</span><span class="t">Les champs</span></a></li>
+    <li><a href="#ch6"><span class="n">06</span><span class="t">Commandes de base</span></a></li>
+    <li><a href="#ch7"><span class="n">07</span><span class="t">Commandes transformantes</span></a></li>
+    <li><a href="#ch8"><span class="n">08</span><span class="t">Rapports et dashboards</span></a></li>
+    <li><a href="#ch9"><span class="n">09</span><span class="t">Pivot et Data Models</span></a></li>
+    <li><a href="#ch10"><span class="n">10</span><span class="t">Lookups</span></a></li>
+    <li><a href="#ch11"><span class="n">11</span><span class="t">Alertes</span></a></li>
+    <li><a href="#ch12"><span class="n">12</span><span class="t">Aller plus loin en SPL</span></a></li>
+    <li class="sep">Learning Path · hors supports</li>
+    <li><a href="#lp1"><span class="n">13</span><span class="t">Planifier rapports et alertes</span></a></li>
+    <li><a href="#lp2"><span class="n">14</span><span class="t">Travailler avec le temps</span></a></li>
+    <li><a href="#lp3"><span class="n">15</span><span class="t">Stats et visualisations</span></a></li>
+    <li><a href="#lp4"><span class="n">16</span><span class="t">Sous-recherches, optimisation</span></a></li>
+    <li><a href="#lp5"><span class="n">17</span><span class="t">Dashboards dynamiques</span></a></li>
+    <li><a href="#lp6"><span class="n">18</span><span class="t">Knowledge objects</span></a></li>
+    <li class="sep">Synthèse</li>
+    <li><a href="#ch13"><span class="n">19</span><span class="t">Fiche jour du TP</span></a></li>
+    <li class="sep">Entraînement</li>
+    <li><a href="qcm.html"><span class="n">↗</span><span class="t"><strong>QCM (164 questions)</strong></span></a></li>
+  </ol>
+  <div class="progress" aria-hidden="true"><span id="pbar"></span></div>
+  <div class="ptext" id="ptext">0 / 20 chapitres appris</div>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">SAE5Cyber03 · Partie Splunk · BUT3 RT</div>
+  <h1>Cours Splunk Fundamentals</h1>
+  <p class="lede">Tout ce qu'il faut savoir pour le TP noté (modules 3 à 13) et le QCM, construit à partir de tes supports : les labs Splunk Fundamentals 1, le guide de référence rapide, la présentation du cours et les notes du prof. Les résultats attendus ont été vérifiés sur tes fichiers de données. Les chapitres 13 à 18 complètent avec le Learning Path de Splunk Academy, hors supports.</p>
+  <p class="qlink"><a class="btn primary" href="qcm.html">Faire le QCM (164 questions)</a></p>
+  <div class="searchbar"><span>index=main sourcetype=access_combined_wcookie status=200 file=success.do | <b>top</b> productId limit=5</span><span class="tr">Tout le temps</span></div>
+</header>
+
+<!-- ============ 00 ============ -->
+<section class="ch" id="ch0">
+  <div class="chhead"><span class="chnum">00</span><label class="learned"><input type="checkbox" data-ch="ch0" id="l-ch0"> Appris</label></div>
+  <h2>L'évaluation et le contexte Splunk</h2>
+  <p class="src">Sources : Evaluation_Partie_Splunk.md, Presentation_Splunk_Cours_v2.pdf</p>
+
+  <h3>Les deux épreuves</h3>
+  <dl class="kv">
+    <dt>TP noté</dt><dd>Reprend les actions des modules 3 à 13. L'installation de Splunk n'est <strong>pas</strong> demandée. Tu auras les PDF des modules, le <em>splunk-quick-reference-guide.pdf</em>, un ou plusieurs jeux de données, et une VM avec Splunk Enterprise <strong>installé mais arrêté</strong>.</dd>
+    <dt>Partiel</dt><dd>QCM sur le cours Splunk et éventuellement les TP, avec quelques questions ouvertes possibles.</dd>
+  </dl>
+  <div class="note tp"><strong class="lbl">Conséquence pour le TP</strong><p>La première chose à faire sera de <strong>démarrer Splunk</strong> (chapitre 02), puis d'<strong>ingérer les fichiers</strong> (chapitre 03). Sache faire ces deux étapes sans réfléchir.</p></div>
+
+  <h3>Splunk et le partenariat académique</h3>
+  <ul>
+    <li>Splunk vend des services aux entreprises et propose des formations aux partenaires et au grand public. <strong>Splunk a été racheté par Cisco</strong>, d'où un début d'intégration avec Netacad.</li>
+    <li>Programme <strong>Splunk Pledge</strong> (accès avec le courriel académique) : plus de 30 cours en ligne orientés <em>Search Expert</em> et <em>Knowledge Manager</em>, accès pendant <strong>1 an</strong>, vidéos rejouables sans limite pendant 12 mois.</li>
+    <li>Labs en ligne : <strong>3 accès par cours</strong>, <strong>4 heures</strong> maximum par séance.</li>
+    <li>Cours avec labs normalement payants (~300 USD) mais à <strong>0 USD</strong> dans le partenariat. Certifications (~500 USD) : bon gratuit à demander à <code>Academicalliance@splunk.com</code>.</li>
+    <li>Plateformes : <code>education.splunk.com</code> (retrouver ses cours commencés), la page Splunk Pledge (choisir les cours), <code>splunk.com</code>.</li>
+    <li>Formats : eLearning, Instructor-Led. Thèmes : <strong>Platform, Observability, Security</strong>. Parcours suivi : <strong>Splunk Core Certified User Learning Path</strong> (~18 h).</li>
+  </ul>
+
+  <h3>Les licences</h3>
+  <div class="tbl"><table>
+    <tr><th>Produit</th><th>Durée</th><th>Détail</th></tr>
+    <tr><td>Splunk Enterprise (essai public)</td><td>60 jours</td><td>Ouvert à tous. Ensuite il bascule en licence Free (plus d'alertes, voir chapitre 11).</td></tr>
+    <tr><td>Splunk Enterprise (partenariat)</td><td>1 an, renouvelable gratuitement</td><td><strong>10 GB</strong> de données indexées par jour.</td></tr>
+    <tr><td>Splunk Enterprise Security</td><td>1 an</td><td>Aussi proposé dans le partenariat.</td></tr>
+    <tr><td>Splunk Cloud (essai)</td><td>14 jours</td><td>Indépendant du partenariat. Compte <code>sc_admin</code>, ajout de données via « Ajouter des données ».</td></tr>
+  </table></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Quelle entreprise a racheté Splunk ?</summary><div>Cisco.</div></details>
+    <details><summary>Quel volume de données la licence du partenariat permet-elle ?</summary><div>10 GB par jour, pendant 1 an, renouvelable gratuitement.</div></details>
+    <details><summary>Combien de fois peut-on accéder à un lab en ligne, et combien de temps ?</summary><div>3 fois par cours, 4 heures maximum par séance, pendant 12 mois.</div></details>
+  </div>
+</section>
+
+<!-- ============ 01 ============ -->
+<section class="ch" id="ch1">
+  <div class="chhead"><span class="chnum">01</span><label class="learned"><input type="checkbox" data-ch="ch1" id="l-ch1"> Appris</label></div>
+  <h2>Concepts et architecture</h2>
+  <p class="src">Sources : splunk-quick-reference-guide.pdf, module 7</p>
+
+  <h3>Le vocabulaire de base</h3>
+  <dl class="kv">
+    <dt>Event</dt><dd>Un ensemble de valeurs associées à un <strong>horodatage</strong>. Une entrée de données, sur une ou plusieurs lignes (une ligne de log, une stack trace…).</dd>
+    <dt>Index</dt><dd>L'endroit sur disque où sont stockés les events. Par défaut : <code>main</code>. Index internes : <code>_internal</code>, <code>_audit</code>, <code>_introspection</code>, <code>_metrics</code>, <code>summary</code>, <code>history</code>…</dd>
+    <dt>host</dt><dd>Le nom de la machine (physique ou virtuelle) d'où vient l'event.</dd>
+    <dt>source</dt><dd>Le fichier, répertoire, flux ou port d'où vient l'event (ex. <code>/var/log/messages</code>, <code>UDP:514</code>).</dd>
+    <dt>sourcetype</dt><dd>Le <strong>format</strong> de la donnée (ex. <code>access_combined</code>, <code>linux_secure</code>). Des sources différentes peuvent partager le même sourcetype.</dd>
+    <dt>Field</dt><dd>Une paire nom = valeur interrogeable (<code>status=503</code>, <code>host=www1</code>).</dd>
+    <dt>Tag</dt><dd>Un nom descriptif posé sur une paire champ = valeur pour regrouper ou rendre lisible.</dd>
+    <dt>Metric</dt><dd>Timestamp + nom de métrique + mesure (numérique) + dimensions. Stocké dans un index différent des events.</dd>
+    <dt>App</dt><dd>Une collection de configurations, knowledge objects, vues et dashboards (ex. <em>Search &amp; Reporting</em>).</dd>
+  </dl>
+
+  <h3>Index-time et search-time</h3>
+  <p><strong>À l'indexation</strong>, Splunk lit la donnée, lui attribue host, source et sourcetype, extrait le timestamp, découpe en events (règles de line-breaking) et écrit dans un index. <strong>À la recherche</strong>, il relit les events sur disque et en extrait les autres champs.</p>
+  <p>Champs stockés dès l'indexation : les <strong>méta-champs</strong> <code>host</code>, <code>source</code>, <code>sourcetype</code>, <code>index</code> et les <strong>champs internes</strong> <code>_time</code> et <code>_raw</code> (l'event brut).</p>
+
+  <h3>Les composants</h3>
+  <div class="tbl"><table>
+    <tr><th>Composant</th><th>Rôle</th></tr>
+    <tr><td><strong>Forwarder</strong></td><td>Instance qui envoie des données à une autre instance Splunk (installé sur les machines à surveiller).</td></tr>
+    <tr><td><strong>Indexer</strong></td><td>Transforme la donnée brute en events, les stocke dans un index et répond aux recherches (les <em>search peers</em>).</td></tr>
+    <tr><td><strong>Search Head</strong></td><td>Reçoit les recherches des utilisateurs, les distribue aux indexers et fusionne les résultats. S'il ne fait que ça : <em>dedicated search head</em>.</td></tr>
+  </table></div>
+  <p>La <strong>recherche distribuée</strong> sépare la couche recherche/présentation de la couche indexation, pour monter en charge horizontalement.</p>
+
+  <h3>Les knowledge objects que tu vas créer</h3>
+  <p>Report (recherche sauvegardée), Dashboard (panneaux), Alert (déclenchée sur condition), Lookup (enrichissement depuis un CSV), Data Model (pour Pivot), Tag, Event type.</p>
+
+  <div class="note retenir"><strong class="lbl">À retenir</strong><p>Chaque event a toujours : <strong>_time, host, source, sourcetype, index</strong>. Forwarder → Indexer → Search Head.</p></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Quelle est la différence entre source et sourcetype ?</summary><div>La source est l'origine précise (le fichier <code>/var/log/secure</code>), le sourcetype est le format de la donnée (<code>linux_secure</code>). Plusieurs sources peuvent avoir le même sourcetype.</div></details>
+    <details><summary>Quels champs existent dès l'indexation ?</summary><div><code>host</code>, <code>source</code>, <code>sourcetype</code>, <code>index</code>, plus les internes <code>_time</code> et <code>_raw</code>.</div></details>
+    <details><summary>Quel composant fusionne les résultats de plusieurs indexers ?</summary><div>Le Search Head.</div></details>
+  </div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="ch" id="ch2">
+  <div class="chhead"><span class="chnum">02</span><label class="learned"><input type="checkbox" data-ch="ch2" id="l-ch2"> Appris</label></div>
+  <h2>Installer et démarrer Splunk</h2>
+  <p class="src">Sources : module 3, Notes_TP1_Prof.md</p>
+
+  <h3>Installation sous Linux (pour comprendre)</h3>
+  <div class="codebox"><pre class="spl"># Paquet .deb (en root)
+apt install ./splunk-10.x.x-xxxx-linux-amd64.deb
+
+# ou archive .tgz
+sudo tar xvzf splunk.tgz -C /opt
+
+# Répertoire par défaut
+/opt/splunk/bin</pre></div>
+
+  <h3>Démarrer et arrêter (à savoir pour le TP)</h3>
+  <p>Splunk ne doit <strong>pas tourner en root</strong> et il ne faut pas modifier les droits des répertoires. On le lance avec l'utilisateur <code>splunk</code> :</p>
+  <div class="codebox"><pre class="spl"># Vérifier / créer l'utilisateur et le groupe si besoin
+sudo groupadd splunk
+sudo useradd -g splunk -m splunk
+
+# Premier démarrage (création du compte admin)
+sudo -H -u splunk /opt/splunk/bin/splunk start --accept-license
+
+# Ensuite
+sudo -H -u splunk /opt/splunk/bin/splunk start
+sudo -H -u splunk /opt/splunk/bin/splunk stop
+sudo -H -u splunk /opt/splunk/bin/splunk restart
+sudo -H -u splunk /opt/splunk/bin/splunk status</pre></div>
+  <p>Au premier démarrage, Splunk demande un <strong>nom d'administrateur</strong> et un <strong>mot de passe d'au moins 8 caractères</strong>, génère les certificats, vérifie les ports puis les index par défaut.</p>
+
+  <h3>Les ports</h3>
+  <div class="tbl"><table>
+    <tr><th>Port</th><th>Usage</th></tr>
+    <tr><td><code>8000</code></td><td>Interface web Splunk Web : <code>http://127.0.0.1:8000</code></td></tr>
+    <tr><td><code>8089</code></td><td>Port de management (splunkd, API REST)</td></tr>
+    <tr><td><code>8191</code></td><td>KV Store</td></tr>
+    <tr><td><code>8065</code></td><td>App server (local, 127.0.0.1)</td></tr>
+    <tr><td><code>9997</code></td><td>Réception des données des forwarders (convention, à configurer)</td></tr>
+  </table></div>
+
+  <h3>Les rôles et la création d'un utilisateur</h3>
+  <ul>
+    <li><strong>admin</strong> : tout, dont Add Data et la gestion des utilisateurs.</li>
+    <li><strong>power</strong> : rechercher, créer et partager des knowledge objects, recherches temps réel. C'est le rôle utilisé dans les labs.</li>
+    <li><strong>user</strong> : rechercher et créer ses propres objets.</li>
+  </ul>
+  <ol class="steps">
+    <li><strong>Settings → Access controls</strong> (ou <em>Settings → Users</em> dans les versions récentes).</li>
+    <li><strong>Users → Add new</strong> (New User).</li>
+    <li>Username <code>uname</code>, mot de passe <code>5p1unkbcup</code> (valeurs du lab), fuseau horaire.</li>
+    <li>Dans <em>Assign to roles</em> : retirer <code>user</code>, ajouter <code>power</code>.</li>
+    <li>Décocher <em>Require password change on first login</em>, puis <strong>Save</strong>.</li>
+  </ol>
+
+  <div class="note piege"><strong class="lbl">Pièges</strong><ul>
+    <li>Lancer Splunk en root ou faire un <code>chown</code> sur <code>/opt/splunk</code>.</li>
+    <li>Oublier que <strong>Add Data n'apparaît qu'avec le compte admin</strong>.</li>
+    <li>Splunk ne permet pas de récupérer un mot de passe admin perdu.</li>
+  </ul></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Quelle commande démarre Splunk proprement sur la VM ?</summary><div><code>sudo -H -u splunk /opt/splunk/bin/splunk start</code></div></details>
+    <details><summary>Sur quel port est l'interface web ? Et le port de management ?</summary><div>8000 pour le web, 8089 pour le management (splunkd).</div></details>
+    <details><summary>Quel rôle donne-t-on à l'utilisateur du lab ?</summary><div><code>power</code>, en retirant <code>user</code>.</div></details>
+  </div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="ch" id="ch3">
+  <div class="chhead"><span class="chnum">03</span><label class="learned"><input type="checkbox" data-ch="ch3" id="l-ch3"> Appris</label></div>
+  <h2>Ingérer les données</h2>
+  <p class="src">Source : module 4</p>
+
+  <h3>Les trois méthodes d'Add Data</h3>
+  <ul>
+    <li><strong>Upload</strong> : envoyer un fichier depuis son ordinateur (une seule fois). C'est ce qu'on fait au TP.</li>
+    <li><strong>Monitor</strong> : surveiller en continu un fichier, un dossier, un port, des journaux Windows…</li>
+    <li><strong>Forward</strong> : recevoir les données d'un Universal Forwarder.</li>
+  </ul>
+
+  <h3>L'assistant, étape par étape</h3>
+  <div class="flow"><span>Select Source</span><i>→</i><span>Set Source Type</span><i>→</i><span>Input Settings</span><i>→</i><span>Review</span><i>→</i><span>Done</span></div>
+  <p>Accès : <strong>page d'accueil → Add Data → Upload → Select File</strong>. Dans <em>Input Settings</em>, on choisit le <strong>host</strong> (valeur constante) et l'<strong>index</strong> (<code>main</code> par défaut).</p>
+
+  <h3>Les trois fichiers du TP</h3>
+  <div class="tbl"><table>
+    <tr><th>Fichier</th><th>Sourcetype</th><th>Host</th><th>Comment</th></tr>
+    <tr><td><code>access_30DAY.log</code></td><td><code>access_combined_wcookie</code></td><td><code>web_application</code></td><td>Détecté automatiquement</td></tr>
+    <tr><td><code>linux_s_30DAY.log</code></td><td><code>linux_secure</code></td><td><code>web_server</code></td><td><strong>Non détecté</strong> : le choisir à la main dans <em>Operating System</em></td></tr>
+    <tr><td><code>db_audit_30DAY.csv</code></td><td><code>db_audit</code></td><td><code>database</code></td><td>Détecté en <code>csv</code> → <strong>Save As</strong> un nouveau sourcetype <code>db_audit</code>, catégorie <em>Database</em></td></tr>
+  </table></div>
+
+  <h3>Ce que contiennent les données (Buttercup Games)</h3>
+  <dl class="kv">
+    <dt>Web application</dt><dd>Logs Apache de la boutique en ligne. Champs utiles : <code>action</code>, <code>bytes</code>, <code>categoryId</code>, <code>clientip</code>, <code>itemId</code>, <code>JSESSIONID</code>, <code>productId</code>, <code>referer</code>, <code>referer_domain</code>, <code>status</code>, <code>useragent</code>, <code>file</code>.</dd>
+    <dt>Web server</dt><dd>Logs <code>sshd</code> : connexions et beaucoup de <em>Failed password</em>. Champs : <code>COMMAND</code>, <code>PWD</code>, <code>pid</code>, <code>process</code>.</dd>
+    <dt>Database</dt><dd>Requêtes SQL. Colonnes : <code>Time</code>, <code>Type</code>, <code>Command</code>, <code>Duration</code>.</dd>
+  </dl>
+
+  <div class="note tp"><strong class="lbl">Important pour le TP</strong><p>Les données vont du <strong>27 juillet au 26 août 2023</strong>. Avec « Last 24 hours » tu n'auras <strong>aucun résultat</strong> : mets le sélecteur de temps sur <strong>All time</strong>.</p></div>
+
+  <p>Après l'ingestion, le lab te fait te déconnecter puis te reconnecter avec le compte <em>power</em> et ouvrir l'app <strong>Search &amp; Reporting</strong> (<em>Skip</em> la visite guidée). Le nombre d'events indexés s'affiche.</p>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Quel sourcetype Splunk ne détecte-t-il pas tout seul ?</summary><div><code>linux_secure</code>, à choisir manuellement dans la catégorie Operating System.</div></details>
+    <details><summary>Comment obtient-on le sourcetype db_audit ?</summary><div>Splunk propose <code>csv</code> : on clique <strong>Save As</strong>, nom <code>db_audit</code>, catégorie Database.</div></details>
+    <details><summary>Dans quel index arrivent les données par défaut ?</summary><div><code>main</code>.</div></details>
+  </div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="ch" id="ch4">
+  <div class="chhead"><span class="chnum">04</span><label class="learned"><input type="checkbox" data-ch="ch4" id="l-ch4"> Appris</label></div>
+  <h2>Rechercher</h2>
+  <p class="src">Sources : modules 5 et 7, guide de référence</p>
+
+  <h3>La structure d'une recherche SPL</h3>
+  <p>SPL = <strong>Search Processing Language</strong>. Avant le premier pipe, il y a une commande <code>search</code> implicite qui va chercher les events dans l'index. Chaque <code>|</code> envoie le résultat à la commande suivante.</p>
+  <div class="codebox"><pre class="spl">termes de recherche | commande1 arguments | commande2 arguments ...</pre></div>
+  <p>Une recherche est faite de : <strong>termes</strong> de recherche, <strong>commandes</strong>, <strong>fonctions</strong>, <strong>arguments</strong> et <strong>clauses</strong> (<code>by</code>, <code>as</code>).</p>
+
+  <h3>Les termes de recherche</h3>
+  <ul>
+    <li><strong>Mots-clés</strong> : <code>error</code>. Insensibles à la casse.</li>
+    <li><strong>Joker</strong> <code>*</code> : <code>fail*</code> trouve fail, failed, failure.</li>
+    <li><strong>Phrase exacte</strong> entre guillemets : <code>"port 22"</code>.</li>
+    <li><strong>Booléens</strong> <code>AND</code>, <code>OR</code>, <code>NOT</code>, <strong>toujours en majuscules</strong>. <code>AND</code> est implicite entre deux termes.</li>
+    <li>Ordre d'évaluation : <code>NOT</code>, puis <code>OR</code>, puis <code>AND</code>. Les parenthèses forcent l'ordre.</li>
+  </ul>
+  <div class="codebox"><pre class="spl">error OR fail*
+fail* AND password "port 22"
+(index="main" OR index="_internal") error</pre></div>
+  <div class="note piege"><strong class="lbl">Piège du module 5</strong><p><code>fail* password 22</code> renvoie tous les events contenant « 22 » n'importe où (heure, PID…). Pour le port SSH il faut la phrase <code>"port 22"</code>.</p></div>
+
+  <h3>L'écran de recherche</h3>
+  <ul>
+    <li>Résultats en <strong>ordre chronologique inverse</strong> (les plus récents d'abord), termes surlignés.</li>
+    <li><strong>Time range picker</strong>, <strong>search mode</strong>, <strong>timeline</strong>, <strong>paginator</strong> (20 par page par défaut), <strong>Fields sidebar</strong>.</li>
+    <li>Cliquer une valeur dans un event : <em>Add to search</em>, <em>Exclude from search</em>, <em>New search</em>.</li>
+    <li>Onglets : <strong>Events</strong>, <strong>Patterns</strong>, <strong>Statistics</strong>, <strong>Visualization</strong>.</li>
+  </ul>
+
+  <h3>La timeline</h3>
+  <ul>
+    <li>Survoler une colonne : nombre d'events et période, sans filtrer.</li>
+    <li>Cliquer ou glisser sur des barres : <strong>filtre</strong> les résultats <strong>sans relancer</strong> la recherche.</li>
+    <li><strong>Zoom to Selection</strong> : réduit la période et <strong>relance</strong> la recherche. <strong>Zoom Out</strong> : élargit et relance. <strong>Deselect</strong> : revient aux résultats d'origine.</li>
+    <li>Un pic d'échecs de connexion au même moment peut signaler une attaque.</li>
+  </ul>
+
+  <h3>Le temps</h3>
+  <p>Unités : <code>s</code> secondes, <code>m</code> minutes, <code>h</code> heures, <code>d</code> jours, <code>w</code> semaines, <code>mon</code> mois, <code>y</code> années. Le <code>@</code> <strong>arrondit vers le bas</strong> (snap).</p>
+  <div class="codebox"><pre class="spl">earliest=-1d@d latest=-1h@h error
+<span class="cm"># à 09:37:12, -30m@h donne 09:00:00 ; à 11:59, @h donne 11:00 (pas 12:00)</span>
+<span class="cm"># @w0 = dimanche, @w1 = lundi</span></pre></div>
+
+  <h3>Les modes de recherche</h3>
+  <dl class="kv">
+    <dt>Fast</dt><dd>Privilégie la vitesse. Pas d'extraction de champs inutiles.</dd>
+    <dt>Smart</dt><dd><strong>Par défaut</strong>. Équilibre vitesse et complétude.</dd>
+    <dt>Verbose</dt><dd>Privilégie la complétude. Donne accès aux events même avec une commande statistique.</dd>
+  </dl>
+
+  <h3>Les jobs</h3>
+  <ul>
+    <li><strong>Chaque recherche est un job</strong>. Barre de job : Pause/Resume, <strong>Stop</strong> (finalise), Job menu, Share, Print, Export.</li>
+    <li>Durée de vie par défaut : <strong>10 minutes</strong>, extensible à <strong>7 jours</strong>. Pour garder plus longtemps : planifier un rapport.</li>
+    <li>Permissions de lecture : <strong>Private</strong> par défaut, ou <strong>Everyone</strong>. Réglage dans <em>Job → Edit Job Settings</em>.</li>
+    <li><strong>Share</strong> fait tout d'un coup : lecture pour tous, 7 jours, lien partageable.</li>
+    <li><strong>Export</strong> : Raw Events (texte), <strong>CSV</strong>, <strong>XML</strong>, <strong>JSON</strong>. Coûteux en mémoire pour de gros résultats.</li>
+    <li><strong>Activity → Jobs</strong> : jobs des 10 dernières minutes et jobs prolongés. Rouvrir un job <strong>ne relance pas</strong> la recherche.</li>
+    <li><strong>Search History</strong> : les chaînes de recherche (pas les résultats), gardées longtemps, filtrables.</li>
+  </ul>
+
+  <div class="note retenir"><strong class="lbl">À retenir</strong><p>Opérateurs en MAJUSCULES, AND implicite, phrase entre guillemets, <code>@</code> arrondit vers le bas, mode Smart par défaut, job : 10 min → 7 jours, Private → Everyone.</p></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Que fait un clic-glisser sur la timeline ?</summary><div>Il filtre les résultats affichés sur la période sélectionnée sans relancer la recherche. <em>Zoom to Selection</em>, lui, relance.</div></details>
+    <details><summary>Durée de vie par défaut d'un job, et maximum via Edit Job Settings ?</summary><div>10 minutes, extensible à 7 jours.</div></details>
+    <details><summary>Quels formats d'export sont proposés ?</summary><div>Raw Events, CSV, XML, JSON.</div></details>
+    <details><summary>Quel mode permet de voir les events derrière un stats ?</summary><div>Verbose.</div></details>
+  </div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section class="ch" id="ch5">
+  <div class="chhead"><span class="chnum">05</span><label class="learned"><input type="checkbox" data-ch="ch5" id="l-ch5"> Appris</label></div>
+  <h2>Les champs</h2>
+  <p class="src">Sources : modules 6 et 7</p>
+
+  <h3>La barre latérale des champs</h3>
+  <dl class="kv">
+    <dt>Selected Fields</dt><dd>Affichés sous chaque event. Par défaut : <strong>host, source, sourcetype</strong>.</dd>
+    <dt>Interesting Fields</dt><dd>Présents dans <strong>au moins 20 %</strong> des events retournés.</dd>
+    <dt>All Fields</dt><dd>Lien pour voir tous les champs découverts, y compris les non intéressants.</dd>
+  </dl>
+  <p>Devant chaque champ : <strong>a</strong> = valeurs alphanumériques, <strong>#</strong> = valeurs majoritairement numériques. Le nombre à droite = <strong>nombre de valeurs distinctes</strong>.</p>
+  <p>Cliquer sur un champ ouvre une fenêtre avec ses <strong>10 valeurs les plus fréquentes</strong>, des raccourcis de rapports (Top values, Rare values, Events with this field…), et <strong>Selected Yes/No</strong> pour l'afficher sous chaque event. Cliquer une valeur l'ajoute à la recherche.</p>
+
+  <h3>Chercher avec des champs</h3>
+  <div class="codebox"><pre class="spl">index=main sourcetype=access_combined_wcookie action=purchase
+status!=200
+src_port>1000 src_port<4000
+clientip="202.201.1.0/24"
+user=*
+sourcetype=access* (referer_domain=*.cn OR referer_domain=*.hk)</pre></div>
+  <ul>
+    <li><strong>Noms de champs sensibles à la casse</strong>, <strong>valeurs non</strong> : <code>host=www3</code> et <code>host=WWW3</code> marchent, <code>HOST=www3</code> ne marche pas.</li>
+    <li>Splunk comprend la notation <strong>CIDR</strong> pour les IP.</li>
+    <li>Opérateurs : <code>= != &lt; &lt;= &gt; &gt;=</code>. <code>champ=*</code> = le champ existe.</li>
+    <li>Chercher par champ est plus précis : <code>status=404</code> ne confond pas avec un indicatif téléphonique 404.</li>
+  </ul>
+
+  <h3><code>!=</code> et <code>NOT</code>, la question classique</h3>
+  <div class="tbl"><table>
+    <tr><th>Recherche</th><th>Renvoie</th></tr>
+    <tr><td><code>status!=200</code></td><td>Events où <code>status</code> <strong>existe</strong> et est différent de 200.</td></tr>
+    <tr><td><code>NOT status=200</code></td><td>Pareil, <strong>plus</strong> tous les events qui n'ont <strong>pas</strong> de champ <code>status</code>.</td></tr>
+  </table></div>
+  <p>Les résultats de <code>!=</code> sont un sous-ensemble de ceux de <code>NOT</code>. Ils sont identiques seulement si le champ existe toujours (ex. <code>status</code> dans <code>access_combined</code>).</p>
+
+  <h3>Exercice du module 6</h3>
+  <div class="codebox"><pre class="spl">index=main sourcetype=access_combined_wcookie action=purchase status!=200</pre></div>
+  <div class="note tp"><strong class="lbl">Résultat attendu</strong><p><strong>1 301</strong> achats terminés en erreur (vérifié sur tes données). Un statut supérieur à 200 veut dire que l'achat n'a pas abouti.</p></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>À partir de quel pourcentage un champ est-il « interesting » ?</summary><div>20 % des events retournés.</div></details>
+    <details><summary>Quels sont les selected fields par défaut ?</summary><div>host, source, sourcetype.</div></details>
+    <details><summary><code>Status=200</code> fonctionne-t-il ?</summary><div>Non : les noms de champs sont sensibles à la casse. <code>status=200</code> fonctionne. Les valeurs, elles, ne le sont pas.</div></details>
+    <details><summary>Pourquoi <code>NOT status=200</code> renvoie-t-il plus de résultats que <code>status!=200</code> ?</summary><div>Parce qu'il inclut aussi les events qui n'ont pas de champ <code>status</code> (ex. les logs linux_secure).</div></details>
+  </div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="ch" id="ch6">
+  <div class="chhead"><span class="chnum">06</span><label class="learned"><input type="checkbox" data-ch="ch6" id="l-ch6"> Appris</label></div>
+  <h2>Commandes de base</h2>
+  <p class="src">Sources : modules 7 et 8</p>
+
+  <div class="tbl"><table>
+    <tr><th>Commande</th><th>Rôle</th><th>Exemple</th></tr>
+    <tr><td><code>search</code></td><td>Filtrer après un pipe</td><td><code>| search EventCode=100</code></td></tr>
+    <tr><td><code>fields</code></td><td>Garder (<code>+</code>, défaut) ou retirer (<code>-</code>) des champs. Accélère la recherche.</td><td><code>| fields action, JSESSIONID</code><br><code>| fields - host, ip</code></td></tr>
+    <tr><td><code>table</code></td><td>Afficher un tableau avec les colonnes dans l'ordre donné</td><td><code>| table JSESSIONID, action</code></td></tr>
+    <tr><td><code>rename</code></td><td>Renommer un champ. Guillemets si espaces.</td><td><code>| rename JSESSIONID as UserSessions</code></td></tr>
+    <tr><td><code>sort</code></td><td>Trier : croissant par défaut, <code>-</code> pour décroissant</td><td><code>| sort -count</code><br><code>| sort ip, -url</code></td></tr>
+    <tr><td><code>dedup</code></td><td>Supprimer les doublons sur un champ (garde le premier)</td><td><code>| dedup JSESSIONID</code></td></tr>
+    <tr><td><code>head</code> / <code>tail</code></td><td>N premiers / N derniers résultats (10 par défaut)</td><td><code>| head 20</code></td></tr>
+    <tr><td><code>reverse</code></td><td>Inverser l'ordre des résultats</td><td><code>| reverse</code></td></tr>
+  </table></div>
+
+  <h3>Le lab 8, étape par étape</h3>
+  <p>Scénario : le marketing veut la liste des sessions avec un achat réussi.</p>
+  <div class="codebox"><pre class="spl">index=main sourcetype=access_combined_wcookie action=purchase status=200
+<span class="cm"># le champ file vaut success.do (achat traité) ou error.do (erreur)</span>
+index=main sourcetype=access_combined_wcookie action=purchase status=200 file=success.do
+... | fields action, JSESSIONID, status
+... | table action, JSESSIONID, status
+... | table JSESSIONID, action, status
+... | table JSESSIONID, action, status | rename JSESSIONID as UserSessions
+... | table JSESSIONID, action, status | rename JSESSIONID as UserSessions | sort UserSessions</pre></div>
+  <p>Version finale (dedup le plus tôt possible) :</p>
+  <div class="codebox"><pre class="spl">index=main sourcetype=access_combined_wcookie action=purchase status=200 file=success.do
+| dedup JSESSIONID
+| table JSESSIONID
+| rename JSESSIONID as UserSessions</pre></div>
+
+  <div class="note piege"><strong class="lbl">Pièges</strong><ul>
+    <li>Après un <code>rename</code>, le champ s'appelle autrement : <code>sort JSESSIONID</code> ne marche plus, il faut <code>sort UserSessions</code>.</li>
+    <li><code>fields</code> ne met pas en forme, <code>table</code> si. Avec <code>table</code>, les résultats passent dans l'onglet <strong>Statistics</strong>.</li>
+    <li>Bonne pratique : <code>dedup</code> le plus tôt possible, filtres avant le premier pipe.</li>
+  </ul></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Comment trier par ordre décroissant ?</summary><div>En mettant un moins devant le champ : <code>| sort -count</code>.</div></details>
+    <details><summary>Différence entre <code>fields</code> et <code>table</code> ?</summary><div><code>fields</code> garde ou retire des champs (performance) sans changer l'affichage des events. <code>table</code> produit un tableau avec les colonnes dans l'ordre indiqué.</div></details>
+    <details><summary>Comment retirer les champs host et ip ?</summary><div><code>| fields - host, ip</code></div></details>
+  </div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="ch" id="ch7">
+  <div class="chhead"><span class="chnum">07</span><label class="learned"><input type="checkbox" data-ch="ch7" id="l-ch7"> Appris</label></div>
+  <h2>Commandes transformantes</h2>
+  <p class="src">Sources : module 9, guide de référence</p>
+
+  <p>Une commande <strong>transformante</strong> transforme les events en <strong>tableau statistique</strong>. Ce sont elles qui alimentent les onglets <strong>Statistics</strong> et <strong>Visualization</strong> : <code>top</code>, <code>rare</code>, <code>stats</code>, <code>chart</code>, <code>timechart</code>. La doc Splunk classe aussi <code>table</code> parmi elles.</p>
+
+  <h3><code>top</code> et <code>rare</code></h3>
+  <ul>
+    <li><code>top</code> : valeurs <strong>les plus fréquentes</strong>. <code>rare</code> : <strong>les moins fréquentes</strong>.</li>
+    <li>Colonnes produites : le champ, <code>count</code>, <code>percent</code>. <strong>10 lignes par défaut</strong>.</li>
+    <li>Arguments : <code>limit=5</code>, <code>showperc=false</code>, <code>showcount=false</code>, et la clause <code>by</code>.</li>
+  </ul>
+  <div class="codebox"><pre class="spl">index=main sourcetype=access_combined_wcookie status=200 file=success.do
+| top productId limit=5 showperc=false
+
+index=main sourcetype=access_combined_wcookie status=200
+| rare file by date_month</pre></div>
+
+  <h3><code>stats</code> et ses fonctions</h3>
+  <div class="tbl"><table>
+    <tr><th>Fonction</th><th>Ce qu'elle calcule</th></tr>
+    <tr><td><code>count</code></td><td>Nombre d'events (ou d'occurrences d'un champ)</td></tr>
+    <tr><td><code>dc(X)</code></td><td><strong>Distinct count</strong> : nombre de valeurs différentes</td></tr>
+    <tr><td><code>sum(X)</code></td><td>Somme</td></tr>
+    <tr><td><code>avg(X)</code></td><td>Moyenne</td></tr>
+    <tr><td><code>min(X)</code> / <code>max(X)</code></td><td>Minimum / maximum (ordre alphabétique si non numérique)</td></tr>
+    <tr><td><code>median</code>, <code>mode</code>, <code>range</code>, <code>stdev</code>, <code>perc95(X)</code></td><td>Médiane, valeur la plus fréquente, max − min, écart type, percentile</td></tr>
+    <tr><td><code>list(X)</code></td><td>Toutes les valeurs, <strong>avec doublons</strong>, dans l'ordre des events</td></tr>
+    <tr><td><code>values(X)</code></td><td>Valeurs <strong>distinctes</strong>, triées par ordre <strong>alphabétique</strong></td></tr>
+    <tr><td><code>earliest(X)</code> / <code>latest(X)</code></td><td>Première / dernière valeur dans le temps</td></tr>
+  </table></div>
+  <p><code>as</code> renomme le résultat (guillemets s'il y a des espaces), <code>by</code> regroupe.</p>
+
+  <h3>Toutes les requêtes du lab 9</h3>
+  <div class="codebox"><pre class="spl"><span class="cm"># 1. Les 5 produits les plus vendus</span>
+index=main sourcetype=access_combined_wcookie status=200 file=success.do | top productId limit=5 showperc=false
+
+<span class="cm"># 2. Fichiers les moins consultés</span>
+index=main sourcetype=access_combined_wcookie status=200 | rare file by date_month
+
+<span class="cm"># 3. Ajouts au panier et achats</span>
+index=main sourcetype=access_combined_wcookie file=success.do OR file=cart.do status=200
+| stats count as Transactions by file | rename file as Function
+
+<span class="cm"># 4. Sessions par IP</span>
+index=main sourcetype=access_combined_wcookie | stats dc(JSESSIONID) as Logins by clientip | sort -Logins
+
+<span class="cm"># 5. Bande passante par fichier</span>
+index=main sourcetype=access_combined_wcookie status=200 | stats sum(bytes) as TotalBytes by file | sort file
+
+<span class="cm"># 6. Requêtes SQL les plus lentes</span>
+index=main sourcetype=db_audit | stats avg(Duration) as "time to complete" by Command | sort -"time to complete"
+
+<span class="cm"># 7. Navigateurs utilisés</span>
+index=main sourcetype=access_combined_wcookie | stats list(useragent)
+index=main sourcetype=access_combined_wcookie | stats values(useragent) as "Agents used" count as "Times used" by useragent
+| table "Agents used", "Times used"</pre></div>
+
+  <div class="note tp"><strong class="lbl">Résultats attendus (vérifiés sur tes fichiers)</strong><ul>
+    <li>Produit le plus vendu : <strong>WC-SH-G04</strong> (1 360 ventes), puis DB-SG-G01 et DC-SG-G02.</li>
+    <li>Fichiers rares : <code>api</code>, <code>account</code>, <code>userlist</code>, <code>passwords.pdf</code>. Ce sont ces fichiers qui inquiètent la sécurité.</li>
+    <li>IP avec le plus de sessions : <strong>87.194.216.51</strong>.</li>
+    <li>Fichier avec le moins de bande passante : <strong>api</strong>.</li>
+    <li>Requêtes SQL les plus lentes : des <code>SELECT *</code> avec <code>INNER JOIN</code> sur la table <code>creditcards</code> (~10 000 ms).</li>
+  </ul></div>
+
+  <div class="note piege"><strong class="lbl">Pièges</strong><ul>
+    <li><code>file=success.do OR file=cart.do status=200</code> fonctionne parce que <code>OR</code> est évalué avant <code>AND</code>.</li>
+    <li><code>sort -"time to complete"</code> : le moins se met devant les guillemets.</li>
+    <li>Après un <code>stats</code>, seuls les champs calculés et ceux du <code>by</code> existent encore.</li>
+  </ul></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Combien de lignes <code>top</code> renvoie-t-il par défaut, et comment cacher le pourcentage ?</summary><div>10 lignes. <code>showperc=false</code>.</div></details>
+    <details><summary>Différence entre <code>list()</code> et <code>values()</code> ?</summary><div><code>list</code> garde toutes les valeurs, doublons compris, dans l'ordre des events. <code>values</code> garde les valeurs distinctes, triées alphabétiquement.</div></details>
+    <details><summary>Que compte <code>dc(JSESSIONID)</code> ?</summary><div>Le nombre de sessions différentes.</div></details>
+    <details><summary>Écris la requête : nombre d'échecs SSH par utilisateur, du plus grand au plus petit.</summary><div><code>index=main sourcetype=linux_secure "Failed password" | stats count by user | sort -count</code>. Sur tes données, <code>root</code> arrive en tête.</div></details>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="ch" id="ch8">
+  <div class="chhead"><span class="chnum">08</span><label class="learned"><input type="checkbox" data-ch="ch8" id="l-ch8"> Appris</label></div>
+  <h2>Rapports et dashboards</h2>
+  <p class="src">Source : module 10</p>
+
+  <h3>Les rapports (reports)</h3>
+  <p>Un rapport est une <strong>recherche sauvegardée</strong> (ou un pivot). On peut le lancer à la demande, le <strong>planifier</strong>, déclencher des alertes et l'ajouter à un dashboard.</p>
+  <ol class="steps">
+    <li>Lancer la recherche, puis <strong>Save As → Report</strong> (au-dessus du sélecteur de temps).</li>
+    <li>Donner un titre (ex. <code>403_by_clientip</code>), <strong>Save</strong>.</li>
+    <li><strong>Permissions</strong> : afficher pour <em>Owner / App / All apps</em>, <em>Run as</em> Owner ou User, lecture/écriture par rôle (ex. Everyone en lecture).</li>
+    <li>Retrouver le rapport dans le menu <strong>Reports</strong>. Cliquer le titre le lance.</li>
+  </ol>
+  <div class="codebox"><pre class="spl">index=main sourcetype=access_combined_wcookie status=403
+| stats count as attempts by clientip
+| sort -attempts</pre></div>
+  <div class="note tp"><strong class="lbl">Résultat attendu</strong><p>L'IP avec le plus de tentatives sur des pages interdites (403) : <strong>73.202.92.7</strong>, avec <strong>100</strong> tentatives.</p></div>
+
+  <h3>Les dashboards</h3>
+  <p>Un dashboard est fait de <strong>panneaux</strong> (panels), chacun lié à une recherche, un rapport ou un pivot.</p>
+  <ol class="steps">
+    <li>Lancer une recherche transformante, onglet <strong>Visualization</strong>, choisir le graphique (Column Chart, Single Value…).</li>
+    <li><strong>Save As → Dashboard Panel</strong>.</li>
+    <li>Dashboard <strong>New</strong> (titre, ex. <em>Sales Dashboard</em>) ou <strong>Existing</strong>. Donner un <em>Panel Title</em>.</li>
+    <li><strong>View Dashboard</strong>. Pour réorganiser : <strong>Edit</strong>, glisser le panneau par sa barre, <strong>Save</strong>.</li>
+    <li>En bas d'un panneau : <strong>Open in Search</strong>, export, refresh.</li>
+  </ol>
+  <div class="codebox"><pre class="spl"><span class="cm"># Panneau « Product Sales » (Column Chart)</span>
+index=main sourcetype=access_combined_wcookie file=success.do status=200 | stats count by productId
+
+<span class="cm"># Panneau « Total Units Sold » (Single Value)</span>
+index=main sourcetype=access_combined_wcookie file=success.do status=200 | stats count</pre></div>
+  <div class="note tp"><strong class="lbl">Résultat attendu</strong><p>Total des unités vendues : <strong>16 139</strong>.</p></div>
+
+  <h3>Choisir la bonne visualisation</h3>
+  <ul>
+    <li><strong>Column / Bar chart</strong> : comparer des catégories (ventes par produit).</li>
+    <li><strong>Line / Area chart</strong> : évolution dans le temps (avec <code>timechart</code>).</li>
+    <li><strong>Pie chart</strong> : part de chaque valeur.</li>
+    <li><strong>Single Value</strong> : un seul chiffre (total).</li>
+  </ul>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Qu'est-ce qu'un rapport dans Splunk ?</summary><div>Une recherche (ou un pivot) sauvegardée, qu'on peut relancer, planifier, partager ou ajouter à un dashboard.</div></details>
+    <details><summary>Quel type de commande faut-il pour obtenir une visualisation ?</summary><div>Une commande transformante (stats, top, chart, timechart…).</div></details>
+    <details><summary>Comment déplacer un panneau en haut du dashboard ?</summary><div>Edit, glisser le panneau par sa barre de titre, puis Save.</div></details>
+  </div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="ch" id="ch9">
+  <div class="chhead"><span class="chnum">09</span><label class="learned"><input type="checkbox" data-ch="ch9" id="l-ch9"> Appris</label></div>
+  <h2>Pivot et Data Models</h2>
+  <p class="src">Sources : module 11, guide de référence</p>
+
+  <dl class="kv">
+    <dt>Data Model</dt><dd>Collection <strong>hiérarchique</strong> de <strong>datasets</strong>. C'est elle que Pivot utilise pour générer des rapports.</dd>
+    <dt>Pivot</dt><dd>Interface pour construire tableaux et graphiques <strong>sans écrire de SPL</strong>. Un pivot peut être sauvegardé en rapport ou en panneau de dashboard.</dd>
+    <dt>Instant Pivot</dt><dd>Pivot lancé directement depuis une recherche <strong>non transformante</strong>, via l'onglet Visualization.</dd>
+  </dl>
+
+  <h3>Le lab 11</h3>
+  <ol class="steps">
+    <li>Recherche non transformante : <code>index=main sourcetype=access_combined_wcookie</code>.</li>
+    <li>Onglet <strong>Visualization</strong> : trois icônes, <em>Pivot</em>, <em>Quick Reports</em>, <em>Search Command</em>. Cliquer <strong>Pivot</strong>, choisir <strong>All Fields</strong>, OK.</li>
+    <li><strong>Filters</strong> : <code>file</code> correspond à <code>cart.do</code>.</li>
+    <li><strong>Split Rows</strong> : <code>productId</code>, label <em>Product Added To Cart</em>.</li>
+    <li><strong>Split Columns</strong> : <code>referer_domain</code>.</li>
+    <li>Nouveau filtre : <code>referer_domain</code> <strong>is not</strong> <code>http://www.buttercupgames.com</code> (le trafic interne).</li>
+    <li>Barre noire à gauche : choisir <strong>Line Chart</strong>.</li>
+    <li><strong>Save As → Dashboard Panel</strong> dans <em>Sales Dashboard</em>, panneau <em>Sales By Referral Domain</em>. Comme c'est un Instant Pivot, Splunk demande un <strong>Model Title</strong> (<em>Web Application Dataset</em>) et un <strong>Model ID</strong> (<code>web_app_ds</code>) : il <strong>crée un Data Model</strong>.</li>
+    <li>Menu <strong>Datasets</strong> → filtre <em>Yours</em> → <strong>Explore → Visualize with Pivot</strong>.</li>
+  </ol>
+
+  <div class="note retenir"><strong class="lbl">À retenir</strong><p>Les quatre zones de Pivot : <strong>Filters</strong>, <strong>Split Rows</strong>, <strong>Split Columns</strong>, <strong>Column Values</strong>. Un pivot a toujours besoin d'un Data Model, et Instant Pivot le crée à l'enregistrement.</p></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Pourquoi Splunk demande-t-il un Model ID quand on sauvegarde un Instant Pivot ?</summary><div>Parce qu'un pivot repose sur un Data Model. Il n'en existait pas, donc Splunk en crée un à partir de la recherche.</div></details>
+    <details><summary>Instant Pivot accepte-t-il une recherche avec <code>stats</code> ?</summary><div>Non, il faut une recherche non transformante.</div></details>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="ch" id="ch10">
+  <div class="chhead"><span class="chnum">10</span><label class="learned"><input type="checkbox" data-ch="ch10" id="l-ch10"> Appris</label></div>
+  <h2>Lookups</h2>
+  <p class="src">Source : module 12</p>
+
+  <p>Un lookup <strong>ajoute des champs aux events depuis une source externe</strong>, typiquement un fichier CSV. Ici : les données web n'ont que le <code>productId</code>, et <code>products.csv</code> apporte le nom (<code>product_name</code>) et le prix (<code>price</code>).</p>
+
+  <h3>Les trois étapes</h3>
+  <div class="flow"><span>1. Lookup table file</span><i>→</i><span>2. Lookup definition</span><i>→</i><span>3. Automatic lookup (option)</span></div>
+  <ol class="steps">
+    <li><strong>Settings → Lookups → Lookup table files → New Lookup Table File</strong> : app <code>search</code>, fichier <code>products.csv</code>, nom de destination <code>products.csv</code>.</li>
+    <li><strong>Settings → Lookups → Lookup definitions → New Lookup Definition</strong> : app <code>search</code>, nom <code>products_lookup</code>, type <strong>File-based</strong>, fichier <code>products.csv</code>.</li>
+    <li><strong>Settings → Lookups → Automatic lookups → New</strong> : nom <code>products_auto_lookup</code>, table <code>products_lookup</code>, <em>Apply to</em> <strong>sourcetype</strong> = <code>access_combined_wcookie</code>, entrée <code>productId = productId</code>, sorties <code>product_name = ProductName</code> et <code>price = Price</code>.</li>
+  </ol>
+
+  <h3>Les commandes</h3>
+  <div class="codebox"><pre class="spl"><span class="cm"># Vérifier le contenu du lookup (commence par un pipe)</span>
+| inputlookup products_lookup
+
+<span class="cm"># Lookup manuel</span>
+index=main sourcetype=access_combined_wcookie status=200 file=success.do
+| lookup products_lookup productId as productId OUTPUT product_name as ProductName
+| stats count by ProductName
+
+<span class="cm"># Avec le lookup automatique, Price et ProductName existent directement</span>
+index=main sourcetype=access_combined_wcookie file=success.do status=200
+| stats sum(Price) as Revenue by ProductName
+| sort -Revenue
+
+<span class="cm"># Écrire des résultats dans un fichier de lookup</span>
+... | outputlookup users.csv</pre></div>
+  <p>Syntaxe : <code>lookup &lt;définition&gt; &lt;champ_du_csv&gt; as &lt;champ_de_l_event&gt; OUTPUT &lt;champ_du_csv&gt; as &lt;nouveau_nom&gt;</code>. <code>OUTPUT</code> écrase un champ existant, <code>OUTPUTNEW</code> ne le remplit que s'il n'existe pas.</p>
+
+  <div class="note tp"><strong class="lbl">Résultat attendu</strong><p>Produit qui rapporte le plus : <strong>Dream Crusher</strong> (corrigé du lab). Le fichier <code>products.csv</code> n'est pas dans ton dossier, il se télécharge via <code>http://splk.it/productdata</code>. Le jour du TP, il sera peut-être fourni.</p></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Dans quel ordre crée-t-on un lookup ?</summary><div>Le fichier (lookup table file), puis la définition, puis éventuellement le lookup automatique.</div></details>
+    <details><summary>Quelle commande affiche le contenu d'un lookup, et pourquoi commence-t-elle par un pipe ?</summary><div><code>| inputlookup products_lookup</code>. C'est une commande génératrice : elle ne lit pas d'index, elle produit elle-même les résultats.</div></details>
+    <details><summary>À quoi s'applique un lookup automatique dans le lab ?</summary><div>Au sourcetype <code>access_combined_wcookie</code>.</div></details>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="ch" id="ch11">
+  <div class="chhead"><span class="chnum">11</span><label class="learned"><input type="checkbox" data-ch="ch11" id="l-ch11"> Appris</label></div>
+  <h2>Alertes</h2>
+  <p class="src">Source : module 13</p>
+
+  <p>Une alerte est une recherche sauvegardée qui se <strong>déclenche quand les résultats remplissent une condition</strong>, puis lance des <strong>actions</strong>. Elle peut porter sur des recherches planifiées ou en temps réel.</p>
+  <div class="note piege"><strong class="lbl">Attention</strong><p>Les alertes <strong>ne fonctionnent pas avec la licence Free</strong>. Il faut la licence d'essai (Trial) ou une vraie licence, et le compte admin pour ce lab.</p></div>
+
+  <h3>Le lab 13 : surveiller les échecs de connexion admin</h3>
+  <ol class="steps">
+    <li>Se déconnecter, se reconnecter une fois avec <code>admin</code> / <code>WrongPassword</code>, puis avec le bon mot de passe.</li>
+    <li>Recherche sur <strong>Last 15 minutes</strong> :</li>
+  </ol>
+  <div class="codebox"><pre class="spl">index=_audit action="login attempt" info=failed user=admin</pre></div>
+  <ol class="steps" start="3">
+    <li><strong>Save As → Alert</strong>, puis remplir :</li>
+  </ol>
+  <div class="tbl"><table>
+    <tr><th>Paramètre</th><th>Valeur du lab</th><th>Autres choix possibles</th></tr>
+    <tr><td>Title</td><td>Splunk Web Login Attempts</td><td></td></tr>
+    <tr><td>Permissions</td><td><strong>Shared in App</strong></td><td>Private</td></tr>
+    <tr><td>Alert type</td><td><strong>Real-time</strong></td><td>Scheduled (heure, jour, semaine, cron)</td></tr>
+    <tr><td>Trigger alert when</td><td><strong>Number of Results is greater than 0 in 1 minute</strong></td><td>Number of Hosts, Number of Sources, Custom</td></tr>
+    <tr><td>Trigger</td><td><strong>For each result</strong></td><td>Once</td></tr>
+    <tr><td>Throttle</td><td>Coché, suppress on field <code>host</code>, pendant <strong>60 s</strong></td><td>Évite d'être inondé d'alertes</td></tr>
+    <tr><td>Trigger Actions</td><td><strong>Add to Triggered Alerts</strong>, severity <strong>High</strong></td><td>Send email, Webhook, Log event, Run a script…</td></tr>
+  </table></div>
+  <ol class="steps" start="4">
+    <li>Tester : se déconnecter, se tromper 3 fois de mot de passe, se reconnecter.</li>
+    <li><strong>Activity → Triggered Alerts</strong> (app Search &amp; Reporting) → <em>View results</em>.</li>
+  </ol>
+
+  <div class="note retenir"><strong class="lbl">À retenir</strong><p>Index des connexions à Splunk : <code>_audit</code>. Types d'alerte : Scheduled ou Real-time. Throttle = suppression des déclenchements répétés. Les alertes déclenchées sont dans Activity → Triggered Alerts.</p></div>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Dans quel index trouve-t-on les tentatives de connexion à Splunk Web ?</summary><div><code>_audit</code>.</div></details>
+    <details><summary>À quoi sert le throttle ?</summary><div>À supprimer les déclenchements répétés pendant une durée donnée (ici 60 s par host), pour ne pas recevoir des dizaines d'alertes identiques.</div></details>
+    <details><summary>Où voir les alertes déclenchées ?</summary><div>Activity → Triggered Alerts.</div></details>
+    <details><summary>Pourquoi une alerte peut-elle ne pas marcher sur une installation de plus de 60 jours ?</summary><div>La licence d'essai est passée en licence Free, qui ne permet pas les alertes.</div></details>
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="ch" id="ch12">
+  <div class="chhead"><span class="chnum">12</span><label class="learned"><input type="checkbox" data-ch="ch12" id="l-ch12"> Appris</label></div>
+  <h2>Aller plus loin en SPL</h2>
+  <p class="src">Source : splunk-quick-reference-guide.pdf (autorisé au TP)</p>
+
+  <h3>Commandes utiles en plus</h3>
+  <div class="tbl"><table>
+    <tr><th>Commande</th><th>Rôle</th><th>Exemple</th></tr>
+    <tr><td><code>eval</code></td><td>Calculer un nouveau champ</td><td><code>| eval kb=bytes/1024</code></td></tr>
+    <tr><td><code>where</code></td><td>Filtrer avec une expression eval (comparer deux champs)</td><td><code>| where count &gt; 50</code></td></tr>
+    <tr><td><code>timechart</code></td><td>Statistique dans le temps (axe X = _time)</td><td><code>| timechart span=1d count by status</code></td></tr>
+    <tr><td><code>chart</code></td><td>Statistique sur deux dimensions</td><td><code>| chart count over productId by action</code></td></tr>
+    <tr><td><code>rex</code></td><td>Extraire un champ par regex</td><td><code>| rex "from (?&lt;src&gt;\d+\.\d+\.\d+\.\d+)"</code></td></tr>
+    <tr><td><code>transaction</code></td><td>Regrouper des events liés</td><td><code>| transaction clientip maxspan=30s</code></td></tr>
+    <tr><td><code>eventstats</code> / <code>streamstats</code></td><td>Stats ajoutées à chaque event / cumulées</td><td><code>| eventstats avg(Duration) as moy</code></td></tr>
+  </table></div>
+
+  <h3>Fonctions eval à connaître</h3>
+  <ul>
+    <li><code>if(X,Y,Z)</code> : <code>eval etat=if(status==200,"OK","Erreur")</code></li>
+    <li><code>case(X,"Y",…)</code> : <code>eval msg=case(status==404,"Not found", status==500,"Server error")</code></li>
+    <li><code>round(X,Y)</code>, <code>len(X)</code>, <code>lower(X)</code>, <code>upper(X)</code>, <code>substr(X,Y,Z)</code>, <code>replace(X,Y,Z)</code></li>
+    <li><code>cidrmatch("10.0.0.0/8", clientip)</code>, <code>isnull(X)</code>, <code>coalesce(…)</code>, <code>tostring(X,"commas")</code></li>
+    <li><code>strftime(_time,"%H:%M")</code>, <code>now()</code>, <code>relative_time(now(),"-1d@d")</code></li>
+  </ul>
+
+  <h3>Sous-recherche</h3>
+  <p>Entre crochets, exécutée <strong>en premier</strong>, son résultat sert d'argument à la recherche principale.</p>
+  <div class="codebox"><pre class="spl">sourcetype=syslog [ search login error | return 1 user ]</pre></div>
+
+  <h3>Optimiser une recherche</h3>
+  <ul>
+    <li>Limiter la <strong>période</strong> (<code>-1h</code> plutôt que <code>-1w</code>).</li>
+    <li>Préciser <strong>index</strong> et <strong>sourcetype</strong>, être le plus spécifique possible (<code>fatal_error</code> plutôt que <code>*error*</code>).</li>
+    <li>Filtrer <strong>avant le premier pipe</strong> : <code>ERROR status=404 | …</code> plutôt que <code>ERROR | search status=404</code>.</li>
+    <li>Retirer les champs inutiles tôt (<code>fields</code>). Mettre les commandes qui traitent tout le jeu (<code>dedup</code>, <code>sort</code>, <code>stats</code>) le plus tard possible.</li>
+  </ul>
+
+  <h3>Recherches sécurité sur tes données</h3>
+  <div class="codebox"><pre class="spl"><span class="cm"># Brute force SSH : IP qui échouent le plus</span>
+index=main sourcetype=linux_secure "Failed password" | stats count by src_ip | sort -count
+
+<span class="cm"># Échecs dans le temps</span>
+index=main sourcetype=linux_secure "Failed password" | timechart span=1d count
+
+<span class="cm"># Erreurs web par code</span>
+index=main sourcetype=access_combined_wcookie status>=400 | stats count by status</pre></div>
+  <p>Sur tes fichiers : <code>root</code> est l'utilisateur le plus visé (≈7 300 échecs), puis <code>administrator</code> et <code>admin</code>. Les IP les plus actives sont <code>10.3.10.46</code> et <code>87.194.216.51</code>. Le nom exact du champ IP (<code>src_ip</code>, <code>src</code> ou <code>rhost</code>) dépend de l'extraction : regarde la barre des champs.</p>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Différence entre <code>search</code> et <code>where</code> après un pipe ?</summary><div><code>where</code> utilise une expression eval : il peut comparer deux champs (<code>where bytes &gt; avg_bytes</code>) et utiliser des fonctions. <code>search</code> utilise la syntaxe de recherche classique.</div></details>
+    <details><summary>Quelle commande pour compter les events par jour ?</summary><div><code>| timechart span=1d count</code></div></details>
+  </div>
+</section>
+
+<!-- ============ LEARNING PATH ============ -->
+<div class="part" id="lp">
+  <div class="eyebrow">Partie 2 · Hors supports</div>
+  <h2>Compléments du Learning Path</h2>
+  <p>Ces chapitres couvrent les cours du parcours <strong>Splunk Core Certified User Learning Path</strong> qui ne sont pas dans tes PDF : planification des rapports, temps, statistiques et visualisations, sous-recherches et optimisation, dashboards dynamiques, knowledge objects. Ils sont rédigés à partir de la documentation et du programme officiel, pas de tes supports. Ils servent surtout pour le QCM. Le TP noté porte sur les modules 3 à 13.</p>
+</div>
+
+<!-- ============ LP1 ============ -->
+<section class="ch" id="lp1">
+  <div class="chhead"><span class="chnum">13</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp1" id="l-lp1"> Appris</label></div>
+  <h2>Planifier rapports et alertes</h2>
+  <p class="src">Cours du parcours : Scheduling Reports &amp; Alerts</p>
+
+  <h3>Planifier un rapport</h3>
+  <p>Un rapport planifié s'exécute tout seul à intervalle régulier. C'est aussi le moyen de <strong>garder des résultats plus de 7 jours</strong>, et il est indispensable pour envoyer un rapport par mail.</p>
+  <ol class="steps">
+    <li><strong>Reports</strong> → ligne du rapport → <strong>Edit → Edit Schedule</strong>, cocher <em>Schedule Report</em>.</li>
+    <li><strong>Schedule</strong> : Run every hour, day, week, month, ou <strong>Run on Cron Schedule</strong>.</li>
+    <li><strong>Time Range</strong> : la période couverte à chaque exécution (ex. Last 24 hours pour un rapport quotidien).</li>
+    <li><strong>Schedule Priority</strong> : <em>Default</em>, <em>Higher</em>, <em>Highest</em>. Sert quand beaucoup de recherches tournent en même temps.</li>
+    <li><strong>Schedule Window</strong> : marge pendant laquelle Splunk peut retarder l'exécution pour lisser la charge (<em>No window</em>, <em>Auto</em> ou une durée).</li>
+    <li><strong>Trigger Actions</strong> : Send email, Run a script, Log event, Webhook, Output results to lookup…</li>
+  </ol>
+
+  <h3>La syntaxe cron</h3>
+  <p>Cinq champs : <strong>minute heure jour-du-mois mois jour-de-semaine</strong> (0 = dimanche).</p>
+  <div class="tbl"><table>
+    <tr><th>Cron</th><th>Signification</th></tr>
+    <tr><td><code>0 * * * *</code></td><td>Toutes les heures, à la minute 0</td></tr>
+    <tr><td><code>*/15 * * * *</code></td><td>Toutes les 15 minutes</td></tr>
+    <tr><td><code>30 6 * * 1-5</code></td><td>À 6 h 30 du lundi au vendredi</td></tr>
+    <tr><td><code>0 0 1 * *</code></td><td>À minuit le 1er de chaque mois</td></tr>
+  </table></div>
+
+  <h3>Autres options d'un rapport</h3>
+  <ul>
+    <li><strong>Permissions</strong> : Private (Owner), This app only (App), All apps (Global), avec lecture et écriture par rôle.</li>
+    <li><strong>Run as Owner / User</strong> : avec quelles permissions de données le rapport tourne.</li>
+    <li><strong>Embed</strong> : intégrer un rapport <strong>planifié</strong> dans une page web externe.</li>
+    <li><strong>Acceleration</strong> : précalcul des résultats, possible seulement si la recherche contient une commande transformante.</li>
+  </ul>
+
+  <h3>Alertes planifiées et temps réel</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Scheduled</th><th>Real-time</th></tr>
+    <tr><td>Exécution</td><td>À intervalle (cron)</td><td>En continu</td></tr>
+    <tr><td>Coût</td><td>Faible</td><td>Élevé : à réserver aux cas urgents</td></tr>
+    <tr><td>Déclenchement</td><td>Number of Results, Hosts, Sources ou Custom, comparé à un seuil</td><td>Per-Result, ou nombre de résultats dans une fenêtre glissante (ex. 1 minute)</td></tr>
+  </table></div>
+  <ul>
+    <li><strong>Trigger Once</strong> : une alerte par exécution. <strong>For each result</strong> : une alerte par résultat.</li>
+    <li><strong>Throttle</strong> : ignorer les déclenchements suivants pendant une durée, éventuellement par valeur de champ.</li>
+    <li><strong>Custom condition</strong> : une recherche appliquée aux résultats, ex. <code>search count &gt; 10</code>.</li>
+    <li>Les alertes déclenchées (<em>Add to Triggered Alerts</em>) <strong>expirent après 24 heures</strong> par défaut. Cette durée est réglable.</li>
+    <li>Dans l'email, on peut utiliser des tokens comme <code>$name$</code> (nom de l'alerte) ou <code>$result.champ$</code>.</li>
+  </ul>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Que veut dire <code>*/15 * * * *</code> ?</summary><div>Toutes les 15 minutes.</div></details>
+    <details><summary>À quoi sert la Schedule Window ?</summary><div>À autoriser Splunk à décaler l'exécution du rapport pour répartir la charge, quand l'heure exacte n'est pas critique.</div></details>
+    <details><summary>Pourquoi éviter les alertes temps réel ?</summary><div>Elles tournent en permanence et consomment beaucoup de ressources. Une alerte planifiée toutes les quelques minutes suffit souvent.</div></details>
+    <details><summary>Quel type de rapport peut-on intégrer (Embed) dans une page web ?</summary><div>Un rapport planifié.</div></details>
+  </div>
+</section>
+
+<!-- ============ LP2 ============ -->
+<section class="ch" id="lp2">
+  <div class="chhead"><span class="chnum">14</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp2" id="l-lp2"> Appris</label></div>
+  <h2>Travailler avec le temps</h2>
+  <p class="src">Cours du parcours : Working with Time</p>
+
+  <h3>Comment Splunk stocke le temps</h3>
+  <ul>
+    <li><code>_time</code> est stocké en <strong>epoch</strong> (secondes depuis le 1/1/1970 UTC). Il est <strong>affiché dans le fuseau horaire de l'utilisateur</strong>, réglé dans les préférences du compte.</li>
+    <li>Splunk extrait l'horodatage de l'event à l'indexation. S'il n'en trouve pas, il prend l'heure d'indexation.</li>
+    <li>Les champs <code>date_*</code> (<code>date_hour</code>, <code>date_mday</code>, <code>date_month</code>, <code>date_wday</code>, <code>date_year</code>, <code>date_minute</code>, <code>date_zone</code>) sont tirés <strong>du texte brut</strong> de l'event, <strong>sans conversion de fuseau</strong>. Ils n'existent que si l'event contient un horodatage.</li>
+  </ul>
+
+  <h3>Les modifieurs dans la recherche</h3>
+  <ul>
+    <li><code>earliest</code> et <code>latest</code> écrits dans la recherche <strong>prennent le dessus</strong> sur le sélecteur de temps.</li>
+    <li>Le <code>@</code> arrondit vers le bas : <code>@d</code> minuit, <code>@h</code> début d'heure, <code>@w1</code> lundi, <code>@mon</code> 1er du mois.</li>
+    <li><code>earliest=-7d@d latest=@d</code> = les 7 jours complets avant aujourd'hui.</li>
+    <li><code>latest=now</code> = maintenant. Un epoch fonctionne aussi : <code>earliest=1690416000</code>.</li>
+  </ul>
+
+  <h3>Grouper et comparer dans le temps</h3>
+  <div class="codebox"><pre class="spl"># Compter par tranche d'1 heure
+... | timechart span=1h count
+
+# Découper _time soi-même puis faire un stats
+... | bin _time span=1d | stats count by _time, status
+
+# Comparer les jours entre eux (chaque jour devient une série)
+... | timechart span=1h count | timewrap 1d
+
+# Activité par heure de la journée, tous jours confondus
+... | stats count by date_hour</pre></div>
+
+  <h3>Formater et convertir</h3>
+  <div class="tbl"><table>
+    <tr><th>Fonction</th><th>Sens</th><th>Exemple</th></tr>
+    <tr><td><code>strftime(X, format)</code></td><td>epoch → texte</td><td><code>eval jour=strftime(_time,"%d/%m/%Y")</code></td></tr>
+    <tr><td><code>strptime(X, format)</code></td><td>texte → epoch</td><td><code>eval t=strptime(Time,"%d/%b/%Y %H:%M:%S")</code></td></tr>
+    <tr><td><code>relative_time(X, "mod")</code></td><td>epoch décalé</td><td><code>relative_time(now(),"-1d@d")</code></td></tr>
+    <tr><td><code>now()</code></td><td>Heure de lancement de la recherche</td><td><code>eval age=now()-_time</code></td></tr>
+  </table></div>
+  <p>Formats courants : <code>%Y</code> année, <code>%m</code> mois, <code>%d</code> jour, <code>%H</code> heure 00-23, <code>%M</code> minutes, <code>%S</code> secondes, <code>%b</code> mois abrégé (Jan), <code>%a</code> jour abrégé (Sun), <code>%A</code> jour complet, <code>%Z</code> fuseau.</p>
+  <p>Pour afficher un champ de temps lisible dans un tableau : <code>| eval Heure=strftime(_time,"%H:%M:%S")</code> ou <code>| convert ctime(_time)</code>.</p>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Le sélecteur dit « Last 24 hours » et la recherche contient <code>earliest=-7d</code>. Qui gagne ?</summary><div>La recherche : <code>earliest</code>/<code>latest</code> dans le SPL prennent le dessus sur le sélecteur.</div></details>
+    <details><summary><code>date_hour</code> tient-il compte du fuseau de l'utilisateur ?</summary><div>Non, il est tiré du texte brut de l'event. <code>_time</code>, lui, est affiché dans le fuseau de l'utilisateur.</div></details>
+    <details><summary>Quelle fonction transforme un texte en epoch ?</summary><div><code>strptime</code> (p comme parse). <code>strftime</code> fait l'inverse (f comme format).</div></details>
+    <details><summary>À quoi sert <code>timewrap</code> ?</summary><div>À superposer des périodes : par exemple chaque jour devient une courbe, pour comparer aujourd'hui à hier.</div></details>
+  </div>
+</section>
+
+<!-- ============ LP3 ============ -->
+<section class="ch" id="lp3">
+  <div class="chhead"><span class="chnum">15</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp3" id="l-lp3"> Appris</label></div>
+  <h2>Statistiques et visualisations</h2>
+  <p class="src">Cours du parcours : Statistical Processing, Visualizations</p>
+
+  <h3><code>stats</code>, <code>chart</code> et <code>timechart</code></h3>
+  <div class="tbl"><table>
+    <tr><th>Commande</th><th>Regroupement</th><th>Usage</th></tr>
+    <tr><td><code>stats</code></td><td><code>by</code> un ou plusieurs champs, sans limite</td><td>Tableaux</td></tr>
+    <tr><td><code>chart</code></td><td><code>over</code> (axe X) <code>by</code> (séries), <strong>2 dimensions maximum</strong></td><td>Graphiques en colonnes, barres, camemberts</td></tr>
+    <tr><td><code>timechart</code></td><td>Axe X = <code>_time</code> automatiquement, <code>by</code> pour les séries</td><td>Courbes, aires dans le temps</td></tr>
+  </table></div>
+  <div class="codebox"><pre class="spl">... | stats count by status, host
+... | chart count over status by host
+... | timechart span=1d count by action
+... | timechart span=1h avg(bytes)</pre></div>
+  <ul>
+    <li><code>chart</code> et <code>timechart</code> limitent à <strong>10 séries</strong> par défaut. Le reste est regroupé dans <strong>OTHER</strong>. Options : <code>limit=0</code> (pas de limite), <code>useother=f</code>, <code>usenull=f</code> (retire la série NULL).</li>
+    <li><code>timechart</code> choisit le <code>span</code> tout seul selon la période, sauf si on le précise.</li>
+  </ul>
+
+  <h3>Compléter les tableaux</h3>
+  <div class="tbl"><table>
+    <tr><th>Commande</th><th>Effet</th></tr>
+    <tr><td><code>addtotals</code></td><td>Ajoute une colonne <code>Total</code> à chaque ligne. <code>col=true</code> ajoute aussi une ligne de totaux.</td></tr>
+    <tr><td><code>addcoltotals</code></td><td>Ajoute une ligne avec le total de chaque colonne.</td></tr>
+    <tr><td><code>fillnull value=0</code></td><td>Remplace les cases vides par 0.</td></tr>
+    <tr><td><code>eventstats</code></td><td>Calcule une statistique et l'ajoute à chaque event, sans regrouper (ex. comparer chaque durée à la moyenne).</td></tr>
+    <tr><td><code>streamstats</code></td><td>Statistique cumulée, event après event (total courant, moyenne glissante).</td></tr>
+  </table></div>
+
+  <h3><code>eval</code> en pratique</h3>
+  <div class="codebox"><pre class="spl">... | eval Mo=round(bytes/1024/1024, 2)
+... | eval Resultat=if(status==200, "OK", "Erreur")
+... | eval Categorie=case(status<300, "Succès", status<500, "Client", true(), "Serveur")
+... | stats count(eval(status>=400)) as Erreurs, count as Total
+| eval Taux=round(Erreurs/Total*100, 1)."%"</pre></div>
+  <p>Dans <code>eval</code> : <code>==</code> ou <code>=</code> pour comparer, <code>.</code> pour concaténer, guillemets doubles pour les textes. Si le nouveau champ a le nom d'un champ existant, il l'écrase.</p>
+
+  <h3>Les visualisations</h3>
+  <ul>
+    <li><strong>Colonnes / barres / camembert</strong> : <code>stats</code>, <code>chart</code> ou <code>top</code>. <strong>Lignes / aires</strong> : <code>timechart</code>.</li>
+    <li><strong>Single Value</strong> : un chiffre. Avec <code>timechart</code>, il affiche en plus une <strong>sparkline</strong> et une <strong>tendance</strong> par rapport à la période précédente.</li>
+    <li><strong>Gauges</strong> (radial, filler, marker) : une valeur par rapport à des plages colorées.</li>
+    <li><strong>Trellis</strong> : découpe un graphique en plusieurs petits graphiques, un par valeur d'un champ.</li>
+    <li><strong>Format</strong> : titres d'axes, légende, empilement (stacked), échelle log, couleurs.</li>
+    <li><strong>Overlay</strong> : afficher une série en courbe par-dessus des colonnes (ex. moyenne).</li>
+  </ul>
+
+  <h3>Cartes</h3>
+  <div class="codebox"><pre class="spl"># Ajouter pays, ville, latitude, longitude à partir d'une IP
+... | iplocation clientip
+
+# Carte à bulles (Cluster Map)
+... | iplocation clientip | geostats count by Country
+
+# Carte choroplèthe (pays colorés)
+... | iplocation clientip | stats count by Country | geom geo_countries featureIdField=Country</pre></div>
+  <p><code>iplocation</code> ajoute les champs <code>City</code>, <code>Country</code>, <code>Region</code>, <code>lat</code>, <code>lon</code>. Les IP privées (10.x, 192.168.x) n'ont pas de position.</p>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Combien de dimensions peut avoir <code>chart</code> ?</summary><div>Deux : <code>over</code> pour l'axe X et <code>by</code> pour les séries.</div></details>
+    <details><summary>Que veut dire la série OTHER dans un timechart ?</summary><div>Les valeurs au-delà des 10 séries par défaut. On l'enlève avec <code>useother=f</code> ou on change <code>limit</code>.</div></details>
+    <details><summary>Différence entre <code>stats</code> et <code>eventstats</code> ?</summary><div><code>stats</code> remplace les events par un tableau résumé. <code>eventstats</code> garde tous les events et leur ajoute le résultat en nouveau champ.</div></details>
+    <details><summary>Quelle commande ajoute le pays à partir d'une IP ?</summary><div><code>iplocation</code>.</div></details>
+  </div>
+</section>
+
+<!-- ============ LP4 ============ -->
+<section class="ch" id="lp4">
+  <div class="chhead"><span class="chnum">16</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp4" id="l-lp4"> Appris</label></div>
+  <h2>Sous-recherches et optimisation</h2>
+  <p class="src">Cours du parcours : Leveraging Lookups and Subsearches, Search Optimization</p>
+
+  <h3>Les sous-recherches</h3>
+  <ul>
+    <li>Entre <strong>crochets</strong> <code>[ ]</code>, exécutée <strong>avant</strong> la recherche principale.</li>
+    <li>Son résultat est converti en conditions : <code>(champ="a") OR (champ="b")</code>.</li>
+    <li>Limites par défaut : <strong>10 000 résultats</strong> et <strong>60 secondes</strong>. Au-delà, les résultats sont tronqués sans erreur bloquante.</li>
+    <li><code>return</code> renvoie N valeurs (<code>return 5 clientip</code>, ou <code>return $clientip</code> pour la valeur seule). <code>fields</code> sert aussi à ne renvoyer que le champ utile.</li>
+  </ul>
+  <div class="codebox"><pre class="spl"># Toutes les actions web des 3 IP qui ont le plus de 403
+index=main sourcetype=access_combined_wcookie
+  [ search index=main sourcetype=access_combined_wcookie status=403
+    | top limit=3 clientip | fields clientip ]
+| stats count by clientip, action
+
+# Exclure ce qu'une sous-recherche renvoie
+index=main sourcetype=access_combined_wcookie NOT [ | inputlookup ip_autorisees.csv | fields clientip ]</pre></div>
+  <p>Quand c'est possible, on préfère un <code>stats</code> ou un <code>lookup</code> à une sous-recherche : c'est plus rapide et sans limite.</p>
+
+  <h3>Les types de commandes</h3>
+  <div class="tbl"><table>
+    <tr><th>Type</th><th>Exemples</th><th>Où elles tournent</th></tr>
+    <tr><td><strong>Generating</strong></td><td><code>search</code> (implicite), <code>inputlookup</code>, <code>makeresults</code>, <code>tstats</code></td><td>Début de recherche. Commencent par <code>|</code> sauf <code>search</code>.</td></tr>
+    <tr><td><strong>Streaming</strong></td><td><code>eval</code>, <code>where</code>, <code>rename</code>, <code>fields</code>, <code>rex</code>, <code>lookup</code></td><td>Event par event, sur les indexers. Rapides.</td></tr>
+    <tr><td><strong>Transforming</strong></td><td><code>stats</code>, <code>chart</code>, <code>timechart</code>, <code>top</code>, <code>rare</code></td><td>Sur le search head, ont besoin de tous les events.</td></tr>
+  </table></div>
+
+  <h3>Les règles d'optimisation</h3>
+  <ol class="steps">
+    <li><strong>Période</strong> la plus courte possible.</li>
+    <li>Toujours <strong>index</strong>, <strong>sourcetype</strong> et si possible <strong>host</strong>/<strong>source</strong>.</li>
+    <li>Filtrer <strong>avant le premier pipe</strong> plutôt qu'avec <code>| search</code>.</li>
+    <li><strong>Inclure plutôt qu'exclure</strong> : <code>status=404 OR status=500</code> est plus efficace que <code>NOT status=200</code>.</li>
+    <li>Éviter les jokers en début de terme (<code>*error</code>).</li>
+    <li><code>fields</code> tôt pour réduire les données. Commandes streaming avant les commandes transformantes.</li>
+    <li>Mode <strong>Fast</strong> quand on n'a pas besoin de tous les champs.</li>
+  </ol>
+
+  <h3>Le Job Inspector</h3>
+  <p><strong>Job → Inspect Job</strong>. Il affiche le temps passé dans chaque partie de la recherche (<em>Execution costs</em>), le nombre d'events <strong>scannés</strong> et <strong>retournés</strong>, et le <code>search.log</code>. Si beaucoup d'events sont scannés pour peu de résultats, la recherche n'est pas assez précise avant le premier pipe.</p>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Quelles sont les limites par défaut d'une sous-recherche ?</summary><div>10 000 résultats et 60 secondes.</div></details>
+    <details><summary>Pourquoi <code>NOT status=200</code> est-il moins efficace que <code>status=404 OR status=500</code> ?</summary><div>Pour exclure, Splunk doit d'abord récupérer tous les events puis les filtrer. Inclure lui permet de ne lire que ce qui correspond.</div></details>
+    <details><summary>Où voir combien d'events une recherche a scannés ?</summary><div>Dans le Job Inspector (Job → Inspect Job).</div></details>
+    <details><summary>Citer une commande génératrice.</summary><div><code>inputlookup</code>, <code>makeresults</code>, <code>tstats</code>, ou <code>search</code> implicite.</div></details>
+  </div>
+</section>
+
+<!-- ============ LP5 ============ -->
+<section class="ch" id="lp5">
+  <div class="chhead"><span class="chnum">17</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp5" id="l-lp5"> Appris</label></div>
+  <h2>Dashboards dynamiques</h2>
+  <p class="src">Cours du parcours : Introduction to Dashboards, Dynamic Dashboards</p>
+
+  <h3>Les deux types de dashboards</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Classic</th><th>Dashboard Studio</th></tr>
+    <tr><td>Format</td><td><strong>Simple XML</strong></td><td><strong>JSON</strong></td></tr>
+    <tr><td>Mise en page</td><td>Lignes et panneaux</td><td><strong>Grid</strong> ou <strong>Absolute</strong> (placement libre, images, formes)</td></tr>
+    <tr><td>Recherches</td><td>Base search + post-process</td><td>Data sources : search, <strong>chain</strong> search, saved search</td></tr>
+  </table></div>
+  <p>Création : <strong>Dashboards → Create New Dashboard</strong>, titre, ID, permissions, type. On ajoute ensuite des panneaux depuis une recherche (<em>Save As → Dashboard Panel</em>) ou dans l'éditeur.</p>
+
+  <h3>Les inputs</h3>
+  <p>Un input permet à l'utilisateur de modifier les recherches du dashboard : <strong>Time picker</strong>, <strong>Dropdown</strong>, <strong>Multiselect</strong>, <strong>Radio</strong>, <strong>Checkbox</strong>, <strong>Text</strong>.</p>
+  <ul>
+    <li>Chaque input écrit sa valeur dans un <strong>token</strong>. Une recherche l'utilise en écrivant <code>$nom_du_token$</code>.</li>
+    <li>Le time picker donne deux valeurs : <code>$time.earliest$</code> et <code>$time.latest$</code>.</li>
+    <li>Les choix d'un dropdown peuvent être <strong>statiques</strong> (saisis à la main) ou <strong>dynamiques</strong> (remplis par une recherche).</li>
+    <li>Réglages : valeur par défaut, <em>Search on change</em>, préfixe et suffixe (utile pour le multiselect).</li>
+  </ul>
+  <div class="codebox"><pre class="spl"># Recherche du panneau, filtrée par un dropdown de token "produit"
+index=main sourcetype=access_combined_wcookie productId=$produit$ file=success.do
+| timechart count
+
+# Recherche qui remplit le dropdown (choix dynamiques)
+index=main sourcetype=access_combined_wcookie | stats count by productId</pre></div>
+
+  <h3>Le drilldown</h3>
+  <p>Ce qui se passe quand on clique sur un graphique ou une ligne :</p>
+  <ul>
+    <li>Ouvrir la recherche correspondante (par défaut dans Classic).</li>
+    <li>Ouvrir un autre dashboard ou une URL, en passant une valeur.</li>
+    <li><strong>Définir un token</strong> pour mettre à jour d'autres panneaux du même dashboard.</li>
+  </ul>
+  <p>Tokens du clic en Classic : <code>$click.value$</code> (valeur de l'axe X ou première colonne), <code>$click.name$</code>, <code>$click.value2$</code> (valeur cliquée), <code>$row.nom_du_champ$</code> (champ de la ligne cliquée).</p>
+
+  <h3>Performance</h3>
+  <ul>
+    <li><strong>Base search + post-process</strong> (Classic) ou <strong>chain search</strong> (Studio) : une seule recherche alimente plusieurs panneaux.</li>
+    <li>Utiliser des <strong>rapports planifiés</strong> comme source des panneaux, plutôt que de relancer la recherche à chaque affichage.</li>
+    <li><strong>Refresh</strong> automatique réglable par panneau.</li>
+  </ul>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Dans quel format est décrit un dashboard Classic ? Et un dashboard Studio ?</summary><div>Simple XML pour Classic, JSON pour Studio.</div></details>
+    <details><summary>Comment une recherche utilise-t-elle la valeur d'un dropdown ?</summary><div>Avec le token entre dollars, ex. <code>productId=$produit$</code>.</div></details>
+    <details><summary>Quels tokens donne un time picker ?</summary><div><code>$nom.earliest$</code> et <code>$nom.latest$</code>.</div></details>
+    <details><summary>À quoi sert une base search ?</summary><div>À lancer une seule recherche qui alimente plusieurs panneaux via des post-process, pour réduire la charge.</div></details>
+  </div>
+</section>
+
+<!-- ============ LP6 ============ -->
+<section class="ch" id="lp6">
+  <div class="chhead"><span class="chnum">18</span><span class="hors">Hors supports</span><label class="learned"><input type="checkbox" data-ch="lp6" id="l-lp6"> Appris</label></div>
+  <h2>Knowledge objects</h2>
+  <p class="src">Cours du parcours : Intro to Knowledge Objects</p>
+
+  <p>Les <strong>knowledge objects</strong> sont des objets créés par les utilisateurs pour donner du sens aux données et les réutiliser. Le <strong>Knowledge Manager</strong> les organise, les nomme et gère leurs permissions. Ils se gèrent dans <strong>Settings → Knowledge</strong> (Searches, reports and alerts, Event types, Tags, Fields, Lookups, Advanced search…).</p>
+
+  <h3>Les objets à connaître</h3>
+  <div class="tbl"><table>
+    <tr><th>Objet</th><th>Ce que c'est</th><th>Exemple</th></tr>
+    <tr><td><strong>Field extraction</strong></td><td>Créer un champ à partir du texte brut, par <strong>regex</strong> ou <strong>délimiteurs</strong>. Outil : <em>Field Extractor</em> (menu d'un event → Extract Fields).</td><td>Extraire l'IP source des logs SSH</td></tr>
+    <tr><td><strong>Field alias</strong></td><td>Un autre nom pour un champ existant. Sert à normaliser entre sourcetypes.</td><td><code>clientip</code> → <code>src</code></td></tr>
+    <tr><td><strong>Calculated field</strong></td><td>Un champ défini par une expression <code>eval</code>, calculé automatiquement.</td><td><code>Mo = bytes/1024/1024</code></td></tr>
+    <tr><td><strong>Lookup</strong></td><td>Enrichissement depuis un CSV (chapitre 10).</td><td><code>products_lookup</code></td></tr>
+    <tr><td><strong>Event type</strong></td><td>Une recherche sauvegardée comme catégorie d'events. <strong>Pas de pipe ni de sous-recherche</strong>. Peut avoir une couleur, une priorité et des tags.</td><td><code>eventtype=echec_ssh</code></td></tr>
+    <tr><td><strong>Tag</strong></td><td>Un nom posé sur une paire champ = valeur. Plusieurs tags possibles par paire.</td><td><code>tag=serveur_web</code></td></tr>
+    <tr><td><strong>Macro</strong></td><td>Un morceau de SPL réutilisable, appelé entre <strong>accents graves</strong>. Arguments possibles : nom <code>macro(1)</code>, utilisé avec <code>$arg$</code>.</td><td><code>`web_achats`</code></td></tr>
+    <tr><td><strong>Workflow action</strong></td><td>Une action dans le menu d'un champ : lien web (GET/POST) ou nouvelle recherche, avec <code>$champ$</code>.</td><td>Whois sur <code>$clientip$</code></td></tr>
+    <tr><td><strong>Report, alert, dashboard, data model</strong></td><td>Déjà vus dans les chapitres 8, 9 et 11.</td><td></td></tr>
+  </table></div>
+
+  <h3>Ordre d'application à la recherche</h3>
+  <div class="flow"><span>Field extractions</span><i>→</i><span>Field aliases</span><i>→</i><span>Calculated fields</span><i>→</i><span>Lookups</span><i>→</i><span>Event types</span><i>→</i><span>Tags</span></div>
+  <p>Conséquence : un calculated field <strong>ne peut pas utiliser un champ venant d'un lookup</strong>, car le lookup est appliqué après. Un alias, lui, peut servir d'entrée à un lookup.</p>
+
+  <h3>Exemples</h3>
+  <div class="codebox"><pre class="spl"># Créer un event type : lancer la recherche puis Save As → Event Type
+index=main sourcetype=linux_secure "Failed password"
+
+# L'utiliser
+eventtype=echec_ssh | stats count by user
+
+# Chercher par tag
+tag=serveur_web
+
+# Appeler une macro (définie dans Settings → Advanced search → Search macros)
+`web_achats` | top productId</pre></div>
+
+  <h3>Permissions et nommage</h3>
+  <ul>
+    <li>Trois niveaux de partage : <strong>Private</strong> (seulement le créateur), <strong>This app only</strong> (l'app), <strong>All apps</strong> (global). Droits de lecture et d'écriture par rôle.</li>
+    <li>Un utilisateur <code>user</code> crée des objets privés. Il faut le rôle <code>power</code> ou <code>admin</code> pour les partager.</li>
+    <li>Un objet <strong>orphelin</strong> est un objet dont le propriétaire a été supprimé. L'admin doit le réattribuer (<em>Reassign Knowledge Objects</em>).</li>
+    <li>Convention de nommage conseillée par Splunk : <code>Groupe_Type_Plateforme_Catégorie_Temps_Description</code>, ex. <code>SOC_Alert_Linux_Auth_RT_EchecsRoot</code>.</li>
+  </ul>
+
+  <div class="quiz"><h3>Vérifie-toi</h3>
+    <details><summary>Dans quel ordre Splunk applique-t-il extractions, alias, calculated fields, lookups, event types et tags ?</summary><div>Extractions → alias → calculated fields → lookups → event types → tags.</div></details>
+    <details><summary>Un event type peut-il contenir <code>| stats</code> ?</summary><div>Non : un event type ne peut contenir ni pipe ni sous-recherche.</div></details>
+    <details><summary>Comment appelle-t-on une macro dans une recherche ?</summary><div>Entre accents graves : <code>`nom_macro`</code>, ou <code>`nom_macro(arg)`</code> avec des arguments.</div></details>
+    <details><summary>Différence entre field alias et calculated field ?</summary><div>L'alias donne un autre nom à un champ existant. Le calculated field crée une nouvelle valeur avec une expression eval.</div></details>
+    <details><summary>Quels sont les trois niveaux de partage d'un knowledge object ?</summary><div>Private, This app only, All apps (global).</div></details>
+  </div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="ch" id="ch13">
+  <div class="chhead"><span class="chnum">19</span><label class="learned"><input type="checkbox" data-ch="ch13" id="l-ch13"> Appris</label></div>
+  <h2>Fiche du jour du TP</h2>
+  <p class="src">Synthèse de tout le cours</p>
+
+  <h3>La checklist</h3>
+  <ol class="steps">
+    <li>Démarrer Splunk : <code>sudo -H -u splunk /opt/splunk/bin/splunk start</code>, puis ouvrir <code>http://127.0.0.1:8000</code>.</li>
+    <li>Se connecter en <strong>admin</strong> (Add Data n'existe qu'en admin).</li>
+    <li>Ingérer chaque fichier avec le <strong>bon sourcetype</strong> et le <strong>host</strong> demandé.</li>
+    <li>Créer l'utilisateur <em>power</em> si c'est demandé.</li>
+    <li>Dans Search &amp; Reporting : mettre <strong>All time</strong>.</li>
+    <li>Toujours commencer par <code>index=main sourcetype=…</code>.</li>
+    <li>Sauvegarder ce qui est demandé : rapport, panneau de dashboard, lookup, alerte, avec les <strong>noms exacts</strong> de l'énoncé.</li>
+  </ol>
+
+  <h3>Les requêtes modèles</h3>
+  <div class="codebox"><pre class="spl"><span class="cm"># Achats réussis</span>
+index=main sourcetype=access_combined_wcookie status=200 file=success.do
+
+<span class="cm"># Top N</span>
+... | top productId limit=5 showperc=false
+
+<span class="cm"># Compter par champ et trier</span>
+... | stats count as Total by clientip | sort -Total
+
+<span class="cm"># Valeurs distinctes</span>
+... | stats dc(JSESSIONID) as Logins by clientip
+
+<span class="cm"># Somme et moyenne</span>
+... | stats sum(bytes) as TotalBytes by file
+index=main sourcetype=db_audit | stats avg(Duration) as "time to complete" by Command
+
+<span class="cm"># Tableau propre</span>
+... | dedup JSESSIONID | table JSESSIONID | rename JSESSIONID as UserSessions
+
+<span class="cm"># Lookup</span>
+| inputlookup products_lookup
+... | lookup products_lookup productId OUTPUT product_name as ProductName
+
+<span class="cm"># Alerte de connexion</span>
+index=_audit action="login attempt" info=failed user=admin</pre></div>
+
+  <h3>Les chiffres de référence sur tes fichiers</h3>
+  <div class="tbl"><table>
+    <tr><th>Question</th><th>Réponse</th></tr>
+    <tr><td>Achats en erreur (<code>action=purchase status!=200</code>)</td><td><strong>1 301</strong></td></tr>
+    <tr><td>Ventes réussies (<code>success.do</code>, 200)</td><td><strong>16 139</strong></td></tr>
+    <tr><td>Produit le plus vendu</td><td><strong>WC-SH-G04</strong> (1 360)</td></tr>
+    <tr><td>IP avec le plus de sessions</td><td><strong>87.194.216.51</strong></td></tr>
+    <tr><td>Fichier avec le moins de bande passante</td><td><strong>api</strong></td></tr>
+    <tr><td>IP avec le plus d'erreurs 403</td><td><strong>73.202.92.7</strong> (100)</td></tr>
+    <tr><td>Produit qui rapporte le plus (lookup)</td><td><strong>Dream Crusher</strong> (corrigé du lab)</td></tr>
+    <tr><td>Période des données</td><td>27/07/2023 → 26/08/2023</td></tr>
+  </table></div>
+  <p>Ces chiffres valent si chacun des trois fichiers est ingéré une seule fois, avec All time. Si tu ingères un fichier deux fois, tout est doublé. Le jour du TP, le jeu de données peut être différent : retiens la méthode plus que les chiffres.</p>
+
+  <div class="note piege"><strong class="lbl">Les erreurs qui coûtent des points</strong><ul>
+    <li>Sélecteur de temps resté sur « Last 24 hours » : zéro résultat.</li>
+    <li>Mauvais sourcetype à l'ingestion : les champs ne sont pas extraits.</li>
+    <li>Fautes de casse dans les noms de champs (<code>productid</code> au lieu de <code>productId</code>).</li>
+    <li><code>and</code>/<code>or</code> en minuscules : ils sont pris comme des mots à chercher.</li>
+    <li>Nom de rapport ou de dashboard différent de celui demandé.</li>
+  </ul></div>
+</section>
+
+
+<div class="part" id="qcm-link">
+  <div class="eyebrow">Entraînement</div>
+  <h2>Passe au QCM</h2>
+  <p>Le QCM est sur une page à part : 164 questions, par chapitre ou sur tout le cours, avec reprise des erreurs.</p>
+  <p class="qlink"><a class="btn primary" href="qcm.html">Ouvrir le QCM</a></p>
+</div>
+
+<footer>Cours rédigé à partir de tes supports de la SAE5Cyber03. Les chiffres de référence ont été recalculés directement sur access_30DAY.log, linux_s_30DAY.log et db_audit_30DAY.csv, sauf « Dream Crusher » qui vient du corrigé (products.csv absent du dossier). Les chapitres 13 à 18 (Learning Path) sont rédigés à partir de la documentation Splunk et du programme du parcours Core Certified User, pas de tes supports. Ta progression est mémorisée dans ce navigateur uniquement.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+  // Coloration SPL légère
+  function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  document.querySelectorAll("pre.spl").forEach(function(pre){
+    if(pre.querySelector("span")) {
+      // contient déjà des commentaires balisés : on colore seulement les nœuds texte
+      pre.childNodes.forEach(function(n){
+        if(n.nodeType===3){var span=document.createElement("span");span.innerHTML=hl(esc(n.textContent));n.replaceWith(span);}
+      });
+    } else {
+      var raw = pre.textContent;
+      pre.innerHTML = raw.split("\n").map(function(line){
+        if(/^\s*#/.test(line)) return '<span class="cm">'+esc(line)+'</span>';
+        return hl(esc(line));
+      }).join("\n");
+    }
+  });
+  function hl(s){
+    return s.split("\n").map(function(line){
+      if(/^\s*#/.test(line)) return '<span class="cm">'+line+'</span>';
+      line = line.replace(/(&quot;|")([^"]*?)\1/g,'<span class="str">"$2"</span>');
+      line = line.replace(/\b(AND|OR|NOT|by|as|OUTPUT|OUTPUTNEW|over)\b(?![^<]*<\/span>)/g,'<span class="kw">$1</span>');
+      line = line.replace(/\|\s*([a-z_]+)/g,'<span class="pipe">|</span> <span class="cmd">$1</span>');
+      return line;
+    }).join("\n");
+  }
+  // Boutons copier
+  document.querySelectorAll(".codebox").forEach(function(box){
+    var b=document.createElement("button");b.className="copy";b.type="button";b.textContent="Copier";
+    b.addEventListener("click",function(){
+      var txt=box.querySelector("pre").innerText;
+      var done=function(){b.textContent="Copié";setTimeout(function(){b.textContent="Copier";},1500);};
+      try{navigator.clipboard.writeText(txt).then(done,function(){sel(box);});}catch(e){sel(box);}
+    });
+    box.appendChild(b);
+  });
+  function sel(box){var r=document.createRange();r.selectNodeContents(box.querySelector("pre"));var s=window.getSelection();s.removeAllRanges();s.addRange(r);}
+  // Progression
+  var KEY="cours-splunk-appris";
+  var state={};
+  try{state=JSON.parse(localStorage.getItem(KEY)||"{}")||{};}catch(e){state={};}
+  var boxes=document.querySelectorAll("input[data-ch]");
+  function render(){
+    var n=0;
+    boxes.forEach(function(cb){
+      var id=cb.dataset.ch; cb.checked=!!state[id]; if(state[id]) n++;
+      var a=document.querySelector('.toc a[href="#'+id+'"]'); if(a) a.classList.toggle("done",!!state[id]);
+    });
+    document.getElementById("pbar").style.width=(n/boxes.length*100)+"%";
+    document.getElementById("ptext").textContent=n+" / "+boxes.length+" chapitres appris";
+  }
+  boxes.forEach(function(cb){cb.addEventListener("change",function(){
+    state[cb.dataset.ch]=cb.checked; try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} render();
+  });});
+  render();
+})();
+</script>
+
+
+
+</html>

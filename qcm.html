@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>QCM Splunk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* Layout : sommaire collant à gauche (desktop), colonne de lecture ~70ch ; chaque chapitre = notions → SPL → pièges → à retenir → quiz */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1b2230; --muted:#5b6476; --line:#dde1e8;
+  --accent:#1f5fbf; --accent-soft:#e6eefb; --amber:#a35c00; --amber-soft:#fff3df;
+  --red:#b3261e; --red-soft:#fdecea; --ok:#1d7a46; --ok-soft:#e5f4ea;
+  --code-bg:#0f1724; --code-fg:#dbe4f3; --c-cmd:#7cc4ff; --c-kw:#ffb86b; --c-str:#a5e3a0; --c-pipe:#8592a8;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151c; --surface:#181e28; --fg:#e4e8ef; --muted:#9aa4b6; --line:#2a3240;
+  --accent:#7fb0ff; --accent-soft:#1c2a42; --amber:#f0b25c; --amber-soft:#2e2414;
+  --red:#ff8a80; --red-soft:#3a1d1b; --ok:#6fd39a; --ok-soft:#163222;
+  --code-bg:#0a0e15; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151c; --surface:#181e28; --fg:#e4e8ef; --muted:#9aa4b6; --line:#2a3240;
+  --accent:#7fb0ff; --accent-soft:#1c2a42; --amber:#f0b25c; --amber-soft:#2e2414;
+  --red:#ff8a80; --red-soft:#3a1d1b; --ok:#6fd39a; --ok-soft:#163222;
+  --code-bg:#0a0e15; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:48px;padding-block:32px 80px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
+@media (max-width:900px){nav.toc{position:static;max-height:none}}
+.toc h2{font:800 13px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.toc a{display:flex;gap:8px;align-items:baseline;padding:5px 8px;border-radius:6px;color:var(--fg);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{background:var(--accent-soft)}
+.toc .n{font:600 12px var(--f-mono);color:var(--muted);min-width:22px}
+.toc a.done .t{color:var(--muted);text-decoration:line-through}
+.progress{margin:14px 0 6px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.ptext{font-size:13px;color:var(--muted)}
+main{min-width:0;max-width:74ch}
+header.hero{padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.eyebrow{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h1{font:800 clamp(34px,5vw,52px)/1.05 var(--f-display);margin:8px 0 14px;text-wrap:balance;letter-spacing:-.01em}
+.lede{font-size:18px;color:var(--muted);margin:0}
+.searchbar{margin-top:20px;display:flex;align-items:center;gap:10px;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:12px 14px;font:14px var(--f-mono);overflow-x:auto;white-space:nowrap}
+.searchbar b{color:var(--c-cmd);font-weight:600}
+.searchbar .tr{margin-left:auto;color:var(--c-pipe);font-size:12px;border:1px solid #2b3648;border-radius:4px;padding:2px 8px}
+section.ch{padding-top:48px;scroll-margin-top:16px}
+.chhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.chnum{font:600 14px var(--f-mono);color:var(--accent)}
+h2{font:800 30px/1.15 var(--f-display);margin:4px 0 6px;text-wrap:balance}
+.src{font-size:13px;color:var(--muted);margin:0 0 18px}
+.learned{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+.learned input{accent-color:var(--ok);width:16px;height:16px}
+h3{font:600 19px/1.3 var(--f-display);margin:28px 0 8px}
+p{margin:0 0 12px}
+ul,ol.steps{margin:0 0 14px;padding-left:22px}
+li{margin:3px 0}
+code{font:0.88em var(--f-mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+.codebox{position:relative;margin:10px 0 16px}
+pre.spl{margin:0;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:14px 16px;font:13.5px/1.6 var(--f-mono);overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+pre.spl .cmd{color:var(--c-cmd);font-weight:600}
+pre.spl .kw{color:var(--c-kw)}
+pre.spl .str{color:var(--c-str)}
+pre.spl .pipe{color:var(--c-pipe)}
+pre.spl .cm{color:#7d8aa0;font-style:italic}
+.copy{position:absolute;top:8px;right:8px;font:600 11px var(--f-body);background:#243047;color:#cfd9ea;border:0;border-radius:4px;padding:4px 8px;cursor:pointer;opacity:.85}
+.copy:hover,.copy:focus-visible{opacity:1;outline:2px solid var(--c-cmd)}
+.tbl{overflow-x:auto;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+td code{white-space:nowrap}
+.note{border-radius:8px;padding:12px 16px;margin:14px 0}
+.note > :last-child{margin-bottom:0}
+.note strong.lbl{display:block;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.retenir{background:var(--accent-soft)} .retenir strong.lbl{color:var(--accent)}
+.piege{background:var(--red-soft)} .piege strong.lbl{color:var(--red)}
+.tp{background:var(--amber-soft)} .tp strong.lbl{color:var(--amber)}
+.quiz{margin-top:22px;border-top:1px dashed var(--line);padding-top:14px}
+.quiz h3{margin-top:0}
+details{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin:8px 0}
+summary{cursor:pointer;padding:10px 14px;font-weight:600}
+summary:focus-visible{outline:2px solid var(--accent);border-radius:8px}
+details > div{padding:0 14px 12px;color:var(--fg)}
+details[open] summary{color:var(--accent)}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 16px;margin:8px 0 14px}
+.kv dt{font:600 14px var(--f-mono)} .kv dd{margin:0}
+@media (max-width:520px){.kv{grid-template-columns:minmax(0,1fr)}.kv dd{margin-bottom:6px}}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 16px;font-size:14px}
+.flow span{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+.flow i{color:var(--muted);font-style:normal}
+.toc li.sep{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 8px 4px}
+.hors{font:600 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);border-radius:4px;padding:2px 8px}
+.part{margin-top:64px;padding:20px 22px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.part h2{margin-top:6px}
+.part p{margin:0;color:var(--muted)}
+.qcm-controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin:6px 0 18px}
+.qcm-controls label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+select{font:15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px;max-width:100%}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.btn:focus-visible,select:focus-visible,.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.qmeta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:600 12px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.qbar{height:4px;background:var(--line);border-radius:2px;margin:10px 0 16px;overflow:hidden}
+.qbar span{display:block;height:100%;background:var(--accent)}
+.qtext{font:600 18px/1.45 var(--f-body);margin:0 0 14px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:15px/1.45 var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;width:100%}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .k{font:600 13px var(--f-mono);color:var(--muted);min-width:16px}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.ko{border-color:var(--red);background:var(--red-soft)}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--accent-soft)}
+.qexp b.ok{color:var(--ok)} .qexp b.ko{color:var(--red)}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:14px;color:var(--muted)}
+.score{font:800 44px/1 var(--f-display);margin:6px 0 4px}
+.review{margin-top:16px;display:grid;gap:10px}
+.review div{border-top:1px solid var(--line);padding-top:10px;font-size:14.5px}
+.review .q{font-weight:600}
+footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+a{color:var(--accent)}
+.qwrap{{max-width:780px;margin:0 auto;padding-block:32px 80px}}
+.back{{font-size:14px}}
+</style>
+
+<div class="qwrap">
+<header class="hero">
+  <div class="eyebrow">SAE5Cyber03 · Partie Splunk · BUT3 RT</div>
+  <h1>QCM Splunk</h1>
+  <p class="lede">164 questions sur les modules 3 à 13 et le Learning Path Splunk Academy. Choisis un périmètre et un nombre de questions, puis réponds. Les questions ratées sont gardées pour être refaites.</p>
+  <p class="back"><a href="index.html">← Retour au cours Splunk Fundamentals</a></p>
+</header>
+<!-- ============ QCM ============ -->
+<section id="qcm">
+
+  <div class="qcm-controls">
+    <label for="qcm-scope">Questions
+      <select id="qcm-scope">
+        <option value="all">Tout le cours</option>
+        <option value="tp">Modules du TP (00 à 12)</option>
+        <option value="lp">Learning Path (13 à 18)</option>
+        <option value="missed">Mes questions ratées</option>
+        <optgroup label="Un chapitre" id="qcm-chopts"></optgroup>
+      </select>
+    </label>
+    <label for="qcm-n">Nombre
+      <select id="qcm-n">
+        <option value="20">20</option>
+        <option value="40">40</option>
+        <option value="0">Toutes</option>
+      </select>
+    </label>
+    <button type="button" class="btn primary" id="qcm-start">Nouvelle série</button>
+  </div>
+
+  <div class="qcard" id="qcm-card" aria-live="polite"></div>
+</section>
+
+<footer>Questions tirées du cours Splunk Fundamentals. Celles des chapitres 13 à 18 portent sur le Learning Path et ne viennent pas de tes supports. Tes questions ratées sont mémorisées dans ce navigateur uniquement.</footer>
+</div>
+
+<script>
+(function(){
+  // Banque de questions : la première option est toujours la bonne (les options sont mélangées à l'affichage)
+  var CH={"0":"00 · L'évaluation","1":"01 · Concepts","2":"02 · Installer","3":"03 · Ingérer","4":"04 · Rechercher","5":"05 · Champs","6":"06 · Commandes de base","7":"07 · Transformantes","8":"08 · Rapports, dashboards","9":"09 · Pivot","10":"10 · Lookups","11":"11 · Alertes","12":"12 · SPL avancé","lp1":"13 · Planification","lp2":"14 · Le temps","lp3":"15 · Stats, visualisations","lp4":"16 · Sous-recherches","lp5":"17 · Dashboards dynamiques","lp6":"18 · Knowledge objects"};
+  var Q=[
+  // 00
+  {c:"0",q:"Quelle entreprise a racheté Splunk ?",o:["Cisco","Microsoft","IBM","Elastic"],e:"Splunk a été racheté par Cisco, d'où l'intégration avec Netacad."},
+  {c:"0",q:"Combien de temps dure la licence Splunk Enterprise du partenariat académique ?",o:["1 an, renouvelable gratuitement","60 jours","14 jours","6 mois"],e:"1 an, 10 GB/jour, renouvellement gratuit."},
+  {c:"0",q:"Combien de temps dure l'essai public de Splunk Enterprise ?",o:["60 jours","14 jours","30 jours","1 an"],e:"60 jours, ensuite la licence bascule en Free."},
+  {c:"0",q:"Combien d'accès aux labs en ligne a-t-on par cours dans le partenariat ?",o:["3 accès de 4 heures maximum","1 accès de 8 heures","5 accès de 2 heures","Illimité"],e:"3 fois par cours, 4 h max par séance, pendant 12 mois."},
+  {c:"0",q:"Quel volume de données la licence du partenariat autorise-t-elle ?",o:["10 GB par jour","500 MB par jour","1 TB par jour","Illimité"],e:"10 GB indexés par jour."},
+  {c:"0",q:"Lors du TP noté, dans quel état sera Splunk sur la VM ?",o:["Installé mais arrêté","Pas installé","Installé et démarré avec les données","Uniquement en version Cloud"],e:"Il faudra démarrer le service, l'installation n'est pas demandée."},
+  // 01
+  {c:"1",q:"Quels champs Splunk attribue-t-il à chaque event dès l'indexation (en plus de _time) ?",o:["host, source, sourcetype","user, clientip, port","status, action, file","tag, eventtype, macro"],e:"Plus index et _raw. Les autres champs sont extraits à la recherche."},
+  {c:"1",q:"Que désigne le sourcetype ?",o:["Le format de la donnée","Le fichier d'origine","La machine d'origine","L'index de stockage"],e:"La source est le fichier, le host la machine, le sourcetype le format."},
+  {c:"1",q:"Quel composant reçoit les recherches, les distribue aux indexers et fusionne les résultats ?",o:["Search head","Indexer","Universal forwarder","License master"],e:"Les indexers sont les search peers ; le search head fusionne."},
+  {c:"1",q:"Dans quel index arrivent les données par défaut ?",o:["main","_internal","default","summary"],e:"main est l'index par défaut."},
+  {c:"1",q:"Quel champ interne contient le texte brut de l'event ?",o:["_raw","_time","source","_text"],e:"_raw = event brut, _time = horodatage."},
+  {c:"1",q:"À quoi sert un forwarder ?",o:["Envoyer des données à une autre instance Splunk","Indexer les données","Afficher les dashboards","Gérer les utilisateurs"],e:"Il est installé sur les machines à surveiller."},
+  {c:"1",q:"Qu'est-ce qu'un event dans Splunk ?",o:["Un ensemble de valeurs associées à un horodatage","Une alerte déclenchée","Un fichier de log complet","Une ligne d'un lookup"],e:"Un event peut faire une ou plusieurs lignes."},
+  {c:"1",q:"Où les metrics sont-elles stockées par rapport aux events ?",o:["Dans des index différents","Dans le même index main","Dans un lookup","Elles ne sont pas stockées"],e:"Events et metrics sont corrélables mais stockés dans des index distincts."},
+  // 02
+  {c:"2",q:"Sur quel port se trouve l'interface web Splunk par défaut ?",o:["8000","8089","9997","8191"],e:"8089 = management, 9997 = réception forwarders, 8191 = KV store."},
+  {c:"2",q:"À quoi correspond le port 8089 ?",o:["Le port de management de splunkd (API REST)","L'interface web","Le KV Store","La réception syslog"],e:""},
+  {c:"2",q:"Pourquoi démarre-t-on Splunk avec <code>sudo -H -u splunk</code> ?",o:["Pour ne pas le faire tourner en root","Pour qu'il démarre plus vite","Pour ouvrir le port 8000","Pour activer la licence"],e:"Bonne pratique de sécurité vue dans les notes du prof."},
+  {c:"2",q:"Quelle option accepte la licence au premier démarrage ?",o:["--accept-license","--agree","--license=yes","--no-prompt-license"],e:"splunk start --accept-license"},
+  {c:"2",q:"Quel rôle donne-t-on au compte créé dans le lab 3 ?",o:["power","admin","user","can_delete"],e:"On retire user et on ajoute power."},
+  {c:"2",q:"Dans quel répertoire Splunk est-il installé par défaut sous Linux ?",o:["/opt/splunk","/usr/local/splunk","/var/lib/splunk","/etc/splunk"],e:"Les binaires sont dans /opt/splunk/bin."},
+  {c:"2",q:"Quelle longueur minimale le mot de passe admin doit-il avoir ?",o:["8 caractères","6 caractères","12 caractères","Aucune"],e:""},
+  {c:"2",q:"Où crée-t-on un nouvel utilisateur dans Splunk Web ?",o:["Settings → Access controls (Users)","Apps → Manage Apps","Activity → Jobs","Search → Users"],e:""},
+  // 03
+  {c:"3",q:"Quel sourcetype Splunk ne détecte-t-il pas automatiquement dans le lab 4 ?",o:["linux_secure","access_combined_wcookie","csv","syslog"],e:"Il faut le choisir dans la catégorie Operating System."},
+  {c:"3",q:"Comment obtient-on le sourcetype db_audit ?",o:["Splunk propose csv, on fait Save As avec le nom db_audit","Il est détecté automatiquement","On renomme le fichier en db_audit.log","On le crée dans Settings → Indexes"],e:"Catégorie Database."},
+  {c:"3",q:"Avec quel compte l'icône Add Data est-elle visible ?",o:["admin","power","user","Tous les comptes"],e:""},
+  {c:"3",q:"Quelle méthode d'Add Data sert à envoyer un fichier une seule fois ?",o:["Upload","Monitor","Forward","Index"],e:"Monitor surveille en continu, Forward reçoit des forwarders."},
+  {c:"3",q:"Quel est l'ordre des étapes de l'assistant Add Data ?",o:["Select Source → Set Source Type → Input Settings → Review","Input Settings → Select Source → Review → Set Source Type","Set Source Type → Select Source → Review → Input Settings","Review → Select Source → Input Settings → Set Source Type"],e:""},
+  {c:"3",q:"Quel host donne-t-on au fichier access_30DAY.log dans le lab ?",o:["web_application","web_server","database","www1"],e:"web_server pour linux_secure, database pour db_audit."},
+  {c:"3",q:"Pourquoi une recherche sur « Last 24 hours » ne renvoie-t-elle rien avec les données du lab ?",o:["Les events datent de juillet-août 2023","L'index main est vide","Le mode Fast est activé","Il faut être admin"],e:"Il faut utiliser All time."},
+  {c:"3",q:"Quel sourcetype est attribué aux logs web Apache du lab ?",o:["access_combined_wcookie","apache_error","web_access","access_log"],e:""},
+  // 04
+  {c:"4",q:"Quel opérateur est implicite entre deux termes de recherche ?",o:["AND","OR","NOT","Aucun"],e:""},
+  {c:"4",q:"Dans quel ordre Splunk évalue-t-il les opérateurs booléens ?",o:["NOT, puis OR, puis AND","AND, puis OR, puis NOT","De gauche à droite","OR, puis AND, puis NOT"],e:"Les parenthèses forcent un autre ordre."},
+  {c:"4",q:"Comment ne trouver que les events contenant exactement « port 22 » ?",o:["\"port 22\"","port 22","port=22*","22 AND port"],e:"Sans guillemets, tout event contenant 22 n'importe où est renvoyé."},
+  {c:"4",q:"Les opérateurs booléens doivent être écrits…",o:["En majuscules","En minuscules","Indifféremment","Entre guillemets"],e:"and/or en minuscules sont pris comme des mots à chercher."},
+  {c:"4",q:"Quelle est la durée de vie par défaut d'un job de recherche ?",o:["10 minutes","1 heure","24 heures","7 jours"],e:"Extensible à 7 jours."},
+  {c:"4",q:"Jusqu'à combien de temps peut-on prolonger un job via Edit Job Settings ?",o:["7 jours","30 jours","24 heures","Illimité"],e:"Au-delà, il faut planifier un rapport."},
+  {c:"4",q:"Quels formats d'export de résultats sont proposés ?",o:["Raw Events, CSV, XML, JSON","PDF, XLSX, DOCX, CSV","CSV uniquement","JSON, YAML, HTML"],e:""},
+  {c:"4",q:"Quel est le mode de recherche par défaut ?",o:["Smart","Fast","Verbose","Auto"],e:""},
+  {c:"4",q:"Quel mode permet de voir les events même avec une commande statistique ?",o:["Verbose","Fast","Smart","Real-time"],e:""},
+  {c:"4",q:"Il est 09:37:12. À quelle heure correspond <code>-30m@h</code> ?",o:["09:00:00","09:07:12","09:30:00","10:00:00"],e:"-30 min donne 09:07:12, puis @h arrondit vers le bas."},
+  {c:"4",q:"Que fait un clic-glisser sur plusieurs barres de la timeline ?",o:["Il filtre les résultats sans relancer la recherche","Il relance la recherche sur la période","Il élargit la période","Il sauvegarde le job"],e:"Zoom to Selection, lui, relance."},
+  {c:"4",q:"Que contient Search History ?",o:["Les chaînes de recherche, gardées longtemps","Les résultats des recherches","Les jobs des 10 dernières minutes","Les alertes déclenchées"],e:"Les résultats sont dans les jobs."},
+  {c:"4",q:"Quelle abréviation désigne les mois dans les modifieurs de temps ?",o:["mon","m","M","mo"],e:"m = minutes."},
+  {c:"4",q:"Dans quel ordre s'affichent les résultats d'une recherche ?",o:["Chronologique inverse (plus récents d'abord)","Chronologique","Alphabétique","Aléatoire"],e:""},
+  {c:"4",q:"Quelles permissions de lecture a un job par défaut ?",o:["Private","Everyone","App","Global"],e:"Share les passe à Everyone."},
+  {c:"4",q:"Rouvrir un job depuis Activity → Jobs…",o:["Ne relance pas la recherche","Relance la recherche","Supprime le job","Prolonge le job de 7 jours"],e:""},
+  // 05
+  {c:"5",q:"À partir de quel pourcentage un champ apparaît-il dans les Interesting Fields ?",o:["20 % des events","10 % des events","50 % des events","100 % des events"],e:""},
+  {c:"5",q:"Quels sont les selected fields par défaut ?",o:["host, source, sourcetype","_time, _raw, index","status, action, file","Aucun"],e:""},
+  {c:"5",q:"Concernant la casse dans <code>champ=valeur</code> :",o:["Le nom est sensible à la casse, la valeur non","La valeur est sensible, le nom non","Les deux sont sensibles","Aucun n'est sensible"],e:"host=WWW3 marche, HOST=www3 non."},
+  {c:"5",q:"Pourquoi <code>NOT status=200</code> renvoie-t-il plus de résultats que <code>status!=200</code> ?",o:["Il inclut les events sans champ status","Il inclut les status=200","!= ignore les nombres","NOT est plus lent"],e:"!= exige que le champ existe."},
+  {c:"5",q:"Quelle recherche est valide pour un sous-réseau ?",o:["clientip=\"202.201.1.0/24\"","clientip=202.201.1.0-255","clientip IN 202.201.1","subnet=202.201.1.0"],e:"Splunk comprend la notation CIDR."},
+  {c:"5",q:"Combien d'achats se terminent en erreur dans les données du lab (action=purchase status!=200) ?",o:["1 301","16 139","829","100"],e:"Valeur du module 6, vérifiée sur tes fichiers."},
+  {c:"5",q:"Que signifie <code>user=*</code> ?",o:["Les events où le champ user existe","Tous les events","Les events sans user","Les users commençant par *"],e:""},
+  {c:"5",q:"Dans la barre des champs, que signifie le symbole # devant un champ ?",o:["Ses valeurs sont majoritairement numériques","C'est un champ sélectionné","C'est un champ calculé","Il a plus de 100 valeurs"],e:"a = alphanumérique."},
+  {c:"5",q:"Combien de valeurs affiche la fenêtre d'un champ quand on clique dessus ?",o:["Les 10 plus fréquentes","Toutes","Les 5 plus rares","Les 20 premières"],e:""},
+  // 06
+  {c:"6",q:"Comment trier par count décroissant ?",o:["| sort -count","| sort count desc","| sort reverse count","| sort count-"],e:""},
+  {c:"6",q:"Comment retirer les champs host et ip des résultats ?",o:["| fields - host, ip","| fields host, ip","| table - host, ip","| remove host, ip"],e:""},
+  {c:"6",q:"Où placer dedup dans une recherche ?",o:["Le plus tôt possible","Toujours à la fin","Juste avant table","Avant le premier pipe"],e:"Bonne pratique pour les performances."},
+  {c:"6",q:"Combien de résultats renvoie <code>head</code> sans argument ?",o:["10","20","100","1"],e:""},
+  {c:"6",q:"Après <code>| rename JSESSIONID as UserSessions</code>, que donne <code>| sort JSESSIONID</code> ?",o:["Rien d'utile : le champ n'existe plus sous ce nom","Un tri correct","Une erreur de syntaxe bloquante","Le tri inverse"],e:"Il faut trier sur UserSessions."},
+  {c:"6",q:"Quelle commande affiche les champs en colonnes dans l'ordre indiqué ?",o:["table","fields","rename","dedup"],e:"fields garde ou retire des champs sans mettre en tableau."},
+  {c:"6",q:"Que fait <code>| dedup JSESSIONID</code> ?",o:["Garde un seul event par valeur de JSESSIONID","Compte les sessions","Supprime le champ JSESSIONID","Trie par JSESSIONID"],e:""},
+  {c:"6",q:"Quelle commande inverse l'ordre des résultats ?",o:["reverse","sort -","tail","invert"],e:""},
+  {c:"6",q:"Dans le lab 8, quel fichier indique un achat traité avec succès ?",o:["success.do","cart.do","error.do","purchase.do"],e:"error.do = erreur de traitement."},
+  // 07
+  {c:"7",q:"Combien de lignes <code>top</code> renvoie-t-il par défaut ?",o:["10","5","20","Toutes"],e:"limit=N pour changer."},
+  {c:"7",q:"Comment masquer la colonne percent de top ?",o:["showperc=false","percent=0","noperc=true","showcount=false"],e:"showcount=false masque le count."},
+  {c:"7",q:"Que calcule <code>dc(X)</code> ?",o:["Le nombre de valeurs distinctes de X","La somme de X","Le nombre d'events","La moyenne de X"],e:"Distinct count."},
+  {c:"7",q:"Quelle est la différence entre values() et list() ?",o:["values : valeurs distinctes triées ; list : toutes, avec doublons","values : avec doublons ; list : distinctes","Aucune","list ne fonctionne qu'avec des nombres"],e:""},
+  {c:"7",q:"Quel est le produit le plus vendu dans les données du lab ?",o:["WC-SH-G04","DB-SG-G01","DC-SG-G02","MB-AG-T01"],e:"1 360 ventes."},
+  {c:"7",q:"Quelle commande affiche les valeurs les moins fréquentes d'un champ ?",o:["rare","top","bottom","least"],e:""},
+  {c:"7",q:"Quel mot-clé renomme le résultat d'une fonction stats ?",o:["as","rename","to","label"],e:"stats count as Transactions"},
+  {c:"7",q:"Quel fichier utilise le moins de bande passante dans le lab 9 ?",o:["api","account","userlist","success.do"],e:""},
+  {c:"7",q:"Quelle IP a le plus de sessions (dc JSESSIONID) dans le lab 9 ?",o:["87.194.216.51","73.202.92.7","10.3.10.46","211.166.11.101"],e:""},
+  {c:"7",q:"Quelles requêtes SQL sont les plus lentes dans db_audit ?",o:["Les SELECT * avec INNER JOIN sur creditcards","Les UPDATE users","Les Connect","Les DELETE"],e:"~10 000 ms en moyenne."},
+  {c:"7",q:"Quelle commande n'est PAS transformante ?",o:["rename","stats","top","timechart"],e:"rename agit event par event."},
+  {c:"7",q:"Comment trier par un champ qui contient des espaces, de façon décroissante ?",o:["| sort -\"time to complete\"","| sort \"-time to complete\"","| sort time to complete desc","| sort -time_to_complete"],e:"Le moins se met devant les guillemets."},
+  {c:"7",q:"Après un <code>stats count by file</code>, quels champs restent disponibles ?",o:["count et file","Tous les champs des events","Seulement count","_raw et _time"],e:""},
+  // 08
+  {c:"8",q:"Qu'est-ce qu'un rapport (report) ?",o:["Une recherche ou un pivot sauvegardé","Un export CSV","Un dashboard","Une alerte déclenchée"],e:""},
+  {c:"8",q:"Quel type de commande faut-il pour obtenir une visualisation ?",o:["Une commande transformante","Une commande de filtrage","Une commande génératrice","N'importe laquelle"],e:""},
+  {c:"8",q:"Quelle IP a le plus de requêtes en 403 dans les données du lab ?",o:["73.202.92.7","87.194.216.51","128.241.220.82","10.2.10.163"],e:"100 tentatives."},
+  {c:"8",q:"Quelle visualisation pour afficher un total unique (Total Units Sold) ?",o:["Single Value","Pie chart","Line chart","Table"],e:""},
+  {c:"8",q:"Comment ajouter une recherche à un dashboard ?",o:["Save As → Dashboard Panel","Save As → Event Type","Export → Dashboard","Job → Share"],e:""},
+  {c:"8",q:"Comment déplacer un panneau dans un dashboard ?",o:["Edit, glisser le panneau par sa barre, Save","Le supprimer et le recréer","Settings → Dashboards → Order","C'est impossible"],e:""},
+  {c:"8",q:"Combien d'unités vendues au total (success.do, 200) dans le lab ?",o:["16 139","19 235","1 301","11 455"],e:""},
+  // 09
+  {c:"9",q:"Sur quoi repose un pivot ?",o:["Un Data Model","Un lookup","Un event type","Une macro"],e:""},
+  {c:"9",q:"Quel type de recherche faut-il pour lancer Instant Pivot ?",o:["Une recherche non transformante","Une recherche avec stats","Une recherche temps réel","Une sous-recherche"],e:""},
+  {c:"9",q:"Quelles sont les zones de l'éditeur Pivot ?",o:["Filters, Split Rows, Split Columns, Column Values","Select, Where, Group By, Order","Source, Type, Host, Index","Rows, Fields, Tags, Lookups"],e:""},
+  {c:"9",q:"Pourquoi Splunk demande-t-il un Model ID en sauvegardant un Instant Pivot ?",o:["Il crée un Data Model car il n'en existait pas","Pour créer un index","Pour planifier le rapport","Pour créer un lookup"],e:""},
+  {c:"9",q:"Qu'est-ce qu'un Data Model ?",o:["Une collection hiérarchique de datasets","Un fichier CSV","Un type de dashboard","Une licence"],e:""},
+  // 10
+  {c:"10",q:"Dans quel ordre crée-t-on un lookup ?",o:["Fichier → définition → lookup automatique","Définition → fichier → lookup automatique","Lookup automatique → fichier → définition","Fichier → lookup automatique → définition"],e:""},
+  {c:"10",q:"Quelle commande affiche le contenu d'un lookup ?",o:["| inputlookup products_lookup","| lookup products_lookup","| outputlookup products_lookup","| showlookup products_lookup"],e:"Commande génératrice, d'où le pipe au début."},
+  {c:"10",q:"Différence entre OUTPUT et OUTPUTNEW ?",o:["OUTPUTNEW ne remplit le champ que s'il n'existe pas","OUTPUTNEW crée un nouveau fichier","OUTPUT ajoute une ligne au CSV","Aucune"],e:"OUTPUT écrase."},
+  {c:"10",q:"Quel produit rapporte le plus dans le lab 12 ?",o:["Dream Crusher","Mediocre Kingdoms","World of Cheese","Manganiello Bros."],e:"Corrigé du lab (products.csv)."},
+  {c:"10",q:"Que fait <code>outputlookup</code> ?",o:["Écrit les résultats dans un fichier de lookup","Lit un lookup","Supprime un lookup","Crée une définition"],e:""},
+  {c:"10",q:"Où crée-t-on un lookup automatique ?",o:["Settings → Lookups → Automatic lookups","Settings → Fields → Aliases","Search → Lookups","Apps → Lookup Editor"],e:""},
+  {c:"10",q:"Dans le lab, à quoi s'applique le lookup automatique ?",o:["Au sourcetype access_combined_wcookie","Au host web_server","À l'index _audit","À toutes les sources"],e:""},
+  {c:"10",q:"Quel type de définition de lookup utilise-t-on dans le lab ?",o:["File-based","External","KV Store","Geospatial"],e:""},
+  // 11
+  {c:"11",q:"Dans quel index trouve-t-on les tentatives de connexion à Splunk ?",o:["_audit","_internal","main","security"],e:""},
+  {c:"11",q:"À quoi sert le throttle d'une alerte ?",o:["Supprimer les déclenchements répétés pendant une durée","Accélérer la recherche","Augmenter la sévérité","Envoyer plus d'emails"],e:""},
+  {c:"11",q:"Où voit-on les alertes déclenchées ?",o:["Activity → Triggered Alerts","Settings → Alerts","Reports","Search History"],e:""},
+  {c:"11",q:"Les alertes fonctionnent-elles avec la licence Free ?",o:["Non","Oui","Seulement en temps réel","Seulement par email"],e:"Il faut la licence d'essai ou une licence payante."},
+  {c:"11",q:"Dans le lab 13, quelle condition déclenche l'alerte ?",o:["Number of Results supérieur à 0 en 1 minute","Number of Hosts supérieur à 1","Number of Results égal à 0","Custom : count > 100"],e:""},
+  {c:"11",q:"Quelle action d'alerte utilise-t-on dans le lab 13 ?",o:["Add to Triggered Alerts, sévérité High","Send email","Run a script","Webhook"],e:""},
+  {c:"11",q:"Quelle permission donne-t-on à l'alerte du lab 13 ?",o:["Shared in App","Private","Global","Everyone en écriture"],e:""},
+  {c:"11",q:"Quelle recherche détecte les échecs de connexion admin ?",o:["index=_audit action=\"login attempt\" info=failed user=admin","index=main \"Failed password\" user=admin","index=_internal login=failed","sourcetype=linux_secure admin"],e:""},
+  // 12
+  {c:"12",q:"Quelle est la différence entre <code>where</code> et <code>search</code> après un pipe ?",o:["where utilise une expression eval et peut comparer deux champs","where est plus lent et inutile","search accepte les fonctions eval","Aucune"],e:""},
+  {c:"12",q:"Quelle commande compte les events par jour ?",o:["| timechart span=1d count","| stats count by day","| chart count over _time","| bin day"],e:""},
+  {c:"12",q:"Comment délimite-t-on une sous-recherche ?",o:["Avec des crochets [ ]","Avec des parenthèses ( )","Avec des accolades { }","Avec des accents graves"],e:""},
+  {c:"12",q:"Quel opérateur concatène deux chaînes dans eval ?",o:[". (point)","+","&","||"],e:""},
+  {c:"12",q:"Quelle commande extrait un champ avec une expression régulière ?",o:["rex","regex","extract","match"],e:"regex filtre, rex extrait."},
+  {c:"12",q:"Que renvoie <code>if(status==200,\"OK\",\"Erreur\")</code> pour status=404 ?",o:["Erreur","OK","404","NULL"],e:""},
+  {c:"12",q:"Quelle commande regroupe des events liés en transactions ?",o:["transaction","group","join","cluster"],e:""},
+  {c:"12",q:"Quelle règle d'optimisation est correcte ?",o:["Filtrer avant le premier pipe","Mettre stats le plus tôt possible","Utiliser *error* plutôt que fatal_error","Rechercher sur All time"],e:""},
+  // LP1
+  {c:"lp1",q:"Que signifie le cron <code>*/15 * * * *</code> ?",o:["Toutes les 15 minutes","Le 15 de chaque mois","À 15 h chaque jour","15 fois par heure"],e:""},
+  {c:"lp1",q:"Quel est l'ordre des champs d'une expression cron ?",o:["minute heure jour-du-mois mois jour-de-semaine","heure minute jour mois année","seconde minute heure jour mois","jour mois année heure minute"],e:""},
+  {c:"lp1",q:"À quoi sert la Schedule Window d'un rapport planifié ?",o:["Autoriser Splunk à décaler l'exécution pour lisser la charge","Définir la période couverte","Limiter le nombre de résultats","Choisir les destinataires"],e:""},
+  {c:"lp1",q:"Quel type de rapport peut-on intégrer (Embed) dans une page web ?",o:["Un rapport planifié","N'importe quel rapport","Un rapport privé","Un rapport temps réel"],e:""},
+  {c:"lp1",q:"Au bout de combien de temps une alerte déclenchée expire-t-elle par défaut dans Triggered Alerts ?",o:["24 heures","10 minutes","7 jours","Jamais"],e:""},
+  {c:"lp1",q:"Quelle est la différence entre Trigger Once et For each result ?",o:["Once : une alerte par exécution ; For each : une par résultat","Once : une seule alerte à vie","For each : une alerte par jour","Aucune"],e:""},
+  {c:"lp1",q:"Quel inconvénient ont les alertes temps réel ?",o:["Elles consomment beaucoup de ressources","Elles ne peuvent pas envoyer d'email","Elles ne marchent que sur _audit","Elles expirent après 10 minutes"],e:""},
+  {c:"lp1",q:"Quelle condition faut-il pour accélérer un rapport ?",o:["Que la recherche contienne une commande transformante","Qu'il soit privé","Qu'il soit temps réel","Qu'il utilise un lookup"],e:""},
+  {c:"lp1",q:"Quels sont les niveaux de Schedule Priority ?",o:["Default, Higher, Highest","Low, Medium, High","1 à 10","Normal, Urgent"],e:""},
+  // LP2
+  {c:"lp2",q:"Le sélecteur de temps dit « Last 24 hours » et la recherche contient <code>earliest=-7d</code>. Quelle période est utilisée ?",o:["7 jours : la recherche l'emporte","24 heures : le sélecteur l'emporte","Les deux combinées","Erreur"],e:""},
+  {c:"lp2",q:"Quelle fonction convertit un texte en epoch ?",o:["strptime","strftime","tostring","relative_time"],e:"p = parse, f = format."},
+  {c:"lp2",q:"Les champs date_* tiennent-ils compte du fuseau horaire de l'utilisateur ?",o:["Non, ils viennent du texte brut de l'event","Oui, toujours","Seulement date_hour","Seulement en mode Verbose"],e:""},
+  {c:"lp2",q:"Comment _time est-il stocké ?",o:["En epoch (secondes depuis le 1/1/1970 UTC)","En texte JJ/MM/AAAA","Dans le fuseau de l'indexer","En millisecondes locales"],e:""},
+  {c:"lp2",q:"À quoi sert <code>timewrap</code> ?",o:["Superposer des périodes pour les comparer (aujourd'hui et hier)","Arrondir _time","Changer de fuseau","Supprimer les events anciens"],e:""},
+  {c:"lp2",q:"Que fait <code>| bin _time span=1h</code> ?",o:["Regroupe _time par tranches d'une heure","Supprime les events de plus d'une heure","Décale _time d'une heure","Crée un timechart"],e:""},
+  {c:"lp2",q:"Quel format strftime affiche l'heure de 00 à 23 ?",o:["%H","%I","%h","%M"],e:"%M = minutes, %I = 12 h."},
+  {c:"lp2",q:"Que vaut <code>@w1</code> ?",o:["Arrondi au lundi","Arrondi au dimanche","Une semaine en arrière","Le 1er du mois"],e:"@w0 = dimanche."},
+  // LP3
+  {c:"lp3",q:"Combien de dimensions de regroupement <code>chart</code> accepte-t-il ?",o:["2 (over et by)","1","3","Illimité"],e:""},
+  {c:"lp3",q:"Que contient la série OTHER d'un timechart ?",o:["Les valeurs au-delà des 10 séries par défaut","Les events sans _time","Les valeurs NULL","Les erreurs"],e:"useother=f pour la retirer."},
+  {c:"lp3",q:"Que fait <code>eventstats</code> ?",o:["Ajoute une statistique à chaque event sans les regrouper","Remplace les events par un tableau","Compte les event types","Calcule un total cumulé"],e:"Le total cumulé, c'est streamstats."},
+  {c:"lp3",q:"Quelle commande ajoute le pays à partir d'une adresse IP ?",o:["iplocation","geostats","geom","lookup geoip"],e:""},
+  {c:"lp3",q:"Que fait <code>addcoltotals</code> ?",o:["Ajoute une ligne avec le total de chaque colonne","Ajoute une colonne Total à chaque ligne","Additionne deux champs","Compte les colonnes"],e:"addtotals ajoute la colonne Total."},
+  {c:"lp3",q:"Quelle commande remplace les valeurs vides par 0 ?",o:["fillnull value=0","nullfill 0","eval null=0","replace null 0"],e:""},
+  {c:"lp3",q:"Quelle commande affiche les données dans le temps avec _time en axe X ?",o:["timechart","chart","stats","table"],e:""},
+  {c:"lp3",q:"Quelle visualisation découpe un graphique en plusieurs petits graphiques par valeur de champ ?",o:["Trellis","Overlay","Gauge","Sparkline"],e:""},
+  {c:"lp3",q:"Quelle commande produit une carte à bulles (Cluster Map) ?",o:["geostats","geom","iplocation","mapchart"],e:"geom sert à la carte choroplèthe."},
+  // LP4
+  {c:"lp4",q:"Quelles sont les limites par défaut d'une sous-recherche ?",o:["10 000 résultats et 60 secondes","1 000 résultats et 10 secondes","Aucune limite","100 résultats et 5 minutes"],e:""},
+  {c:"lp4",q:"Laquelle est une commande génératrice ?",o:["inputlookup","eval","stats","rename"],e:"Aussi makeresults, tstats."},
+  {c:"lp4",q:"Où voir le nombre d'events scannés et le coût de chaque commande ?",o:["Job Inspector","Search History","Triggered Alerts","Monitoring Console uniquement"],e:"Job → Inspect Job."},
+  {c:"lp4",q:"Quelle recherche est la plus efficace ?",o:["status=404 OR status=500","NOT status=200","*error*","status!=2*"],e:"Inclure plutôt qu'exclure."},
+  {c:"lp4",q:"Quand une sous-recherche s'exécute-t-elle ?",o:["Avant la recherche principale","Après la recherche principale","En parallèle","Uniquement si la principale renvoie 0 résultat"],e:""},
+  {c:"lp4",q:"Quelle commande est streaming ?",o:["eval","stats","timechart","top"],e:""},
+  {c:"lp4",q:"Pourquoi éviter les jokers en début de terme (<code>*error</code>) ?",o:["Ils obligent Splunk à parcourir beaucoup plus de données","Ils sont interdits","Ils ignorent la casse","Ils ne marchent qu'avec NOT"],e:""},
+  // LP5
+  {c:"lp5",q:"Dans quel format est décrit un dashboard Classic ?",o:["Simple XML","JSON","YAML","HTML pur"],e:""},
+  {c:"lp5",q:"Dans quel format est décrit un dashboard Dashboard Studio ?",o:["JSON","Simple XML","CSV","Markdown"],e:""},
+  {c:"lp5",q:"Comment une recherche utilise-t-elle la valeur d'un input ?",o:["Avec le token entre dollars : $produit$","Avec des crochets [produit]","Avec des accents graves `produit`","Avec %produit%"],e:""},
+  {c:"lp5",q:"Quels tokens fournit un time picker nommé <code>time</code> ?",o:["$time.earliest$ et $time.latest$","$time.start$ et $time.end$","$earliest$ uniquement","$time$"],e:""},
+  {c:"lp5",q:"À quoi sert une base search ?",o:["Alimenter plusieurs panneaux avec une seule recherche","Créer un index","Planifier le dashboard","Protéger le dashboard"],e:"Post-process en Classic, chain search en Studio."},
+  {c:"lp5",q:"Quel token Classic contient la valeur cliquée sur l'axe X d'un graphique ?",o:["$click.value$","$row.value$","$click.x$","$value$"],e:""},
+  {c:"lp5",q:"Quelles mises en page propose Dashboard Studio ?",o:["Grid et Absolute","Rows et Columns","Fixed et Fluid","Une seule"],e:""},
+  {c:"lp5",q:"Qu'est-ce qu'un dropdown à choix dynamiques ?",o:["Un dropdown dont les choix viennent d'une recherche","Un dropdown qui change de couleur","Un dropdown multi-sélection","Un dropdown temps réel"],e:""},
+  // LP6
+  {c:"lp6",q:"Dans quel ordre Splunk applique-t-il ces knowledge objects à la recherche ?",o:["Extractions → alias → calculated fields → lookups → event types → tags","Tags → event types → lookups → alias → extractions","Lookups → extractions → tags → alias","Alias → tags → extractions → lookups"],e:""},
+  {c:"lp6",q:"Un event type peut-il contenir un pipe ?",o:["Non, ni pipe ni sous-recherche","Oui, sans limite","Oui, un seul","Seulement | stats"],e:""},
+  {c:"lp6",q:"Comment appelle-t-on une macro dans une recherche ?",o:["Entre accents graves : `ma_macro`","Entre dollars : $ma_macro$","Entre crochets : [ma_macro]","Avec | macro ma_macro"],e:""},
+  {c:"lp6",q:"Quelle est la différence entre un field alias et un calculated field ?",o:["L'alias renomme un champ existant, le calculated field crée une valeur avec eval","Aucune","L'alias utilise une regex","Le calculated field vient d'un CSV"],e:""},
+  {c:"lp6",q:"Quels sont les niveaux de partage d'un knowledge object ?",o:["Private, This app only, All apps","Public, Privé","User, Power, Admin","Local, Cloud"],e:""},
+  {c:"lp6",q:"Qu'est-ce qu'un knowledge object orphelin ?",o:["Un objet dont le propriétaire a été supprimé","Un objet sans permission","Un lookup sans fichier","Un dashboard sans panneau"],e:"L'admin doit le réattribuer."},
+  {c:"lp6",q:"Un calculated field peut-il utiliser un champ issu d'un lookup automatique ?",o:["Non, les lookups sont appliqués après","Oui, toujours","Seulement en mode Verbose","Seulement avec OUTPUTNEW"],e:""},
+  {c:"lp6",q:"Comment cherche-t-on les events portant un tag ?",o:["tag=nom_du_tag","eventtype=nom_du_tag","#nom_du_tag","| tag nom_du_tag"],e:""},
+  {c:"lp6",q:"Avec quel outil crée-t-on une extraction de champ par regex ou délimiteurs sans écrire la regex ?",o:["Field Extractor","Pivot","Job Inspector","Lookup Editor"],e:""},
+  {c:"lp6",q:"Que permet une workflow action ?",o:["Ajouter une action (lien web ou recherche) sur un champ","Planifier un rapport","Créer un index","Envoyer une alerte"],e:"Ex. un whois sur $clientip$."}
+  ];
+  Q.forEach(function(q,i){q.id=i;});
+
+  var MKEY="cours-splunk-qcm-rates", missed={};
+  try{missed=JSON.parse(localStorage.getItem(MKEY)||"{}")||{};}catch(e){missed={};}
+  function saveMissed(){try{localStorage.setItem(MKEY,JSON.stringify(missed));}catch(e){}}
+
+  var scopeSel=document.getElementById("qcm-scope"), nSel=document.getElementById("qcm-n"), card=document.getElementById("qcm-card");
+  var og=document.getElementById("qcm-chopts");
+  Object.keys(CH).forEach(function(k){var o=document.createElement("option");o.value="c:"+k;o.textContent=CH[k]+" ("+Q.filter(function(q){return q.c===k;}).length+")";og.appendChild(o);});
+  document.querySelector('#qcm-scope option[value="all"]').textContent="Tout le cours ("+Q.length+")";
+
+  function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  var S=null;
+
+  function pool(scope){
+    if(scope==="all") return Q;
+    if(scope==="tp") return Q.filter(function(q){return q.c.indexOf("lp")!==0;});
+    if(scope==="lp") return Q.filter(function(q){return q.c.indexOf("lp")===0;});
+    if(scope==="missed") return Q.filter(function(q){return missed[q.id];});
+    if(scope.indexOf("c:")===0){var c=scope.slice(2);return Q.filter(function(q){return q.c===c;});}
+    return Q;
+  }
+  function start(list){
+    if(!list.length){card.innerHTML='<p class="qtext">Aucune question ratée pour l\'instant.</p><p>Fais une série sur tout le cours : chaque question ratée sera gardée ici jusqu\'à ce que tu y répondes juste.</p>';return;}
+    S={list:list,i:0,good:0,wrong:[]};show();
+  }
+  function startFromControls(){
+    var n=parseInt(nSel.value,10), l=shuffle(pool(scopeSel.value));
+    start(n?l.slice(0,n):l);
+  }
+  function show(){
+    var q=S.list[S.i], order=shuffle([0,1,2,3]);
+    var h='<div class="qmeta"><span>Question '+(S.i+1)+' / '+S.list.length+'</span><span>'+CH[q.c]+'</span></div>';
+    h+='<div class="qbar"><span style="width:'+(S.i/S.list.length*100)+'%"></span></div>';
+    h+='<p class="qtext">'+q.q+'</p><div class="opts">';
+    order.forEach(function(k,idx){h+='<button type="button" class="opt" data-k="'+k+'"><span class="k">'+"ABCD"[idx]+'</span><span>'+q.o[k]+'</span></button>';});
+    h+='</div><div id="qexp"></div><div class="qnav"><span>Score : '+S.good+' / '+S.i+'</span><button type="button" class="btn primary" id="qnext" hidden>'+(S.i+1<S.list.length?'Question suivante':'Voir le résultat')+'</button></div>';
+    card.innerHTML=h;
+    card.querySelectorAll(".opt").forEach(function(b){b.addEventListener("click",function(){answer(b);});});
+    document.getElementById("qnext").addEventListener("click",function(){S.i++; if(S.i<S.list.length) show(); else end();});
+  }
+  function answer(b){
+    var q=S.list[S.i], ok=b.dataset.k==="0";
+    card.querySelectorAll(".opt").forEach(function(x){x.disabled=true; if(x.dataset.k==="0") x.classList.add("ok");});
+    if(ok){S.good++; delete missed[q.id];} else {b.classList.add("ko"); S.wrong.push(q); missed[q.id]=1;}
+    saveMissed();
+    document.getElementById("qexp").innerHTML='<div class="qexp"><b class="'+(ok?'ok':'ko')+'">'+(ok?'Bonne réponse.':'Raté. Réponse : '+q.o[0]+'.')+'</b>'+(q.e?' '+q.e:'')+'</div>';
+    var nx=document.getElementById("qnext"); nx.hidden=false; nx.focus();
+  }
+  function end(){
+    var pct=Math.round(S.good/S.list.length*100);
+    var msg=pct>=80?"Très bien, tu es prêt sur ces chapitres.":pct>=60?"Correct. Relis les chapitres des questions ratées.":"À retravailler : relis les chapitres ci-dessous puis refais tes erreurs.";
+    var h='<div class="qmeta"><span>Résultat</span><span>'+S.list.length+' questions</span></div>';
+    h+='<div class="score">'+S.good+' / '+S.list.length+' <span style="font-size:22px;color:var(--muted)">('+pct+' %)</span></div><p>'+msg+'</p>';
+    h+='<div class="qnav" style="justify-content:flex-start">';
+    if(S.wrong.length) h+='<button type="button" class="btn primary" id="qredo">Refaire mes '+S.wrong.length+' erreurs</button>';
+    h+='<button type="button" class="btn" id="qnew">Nouvelle série</button></div>';
+    if(S.wrong.length){
+      h+='<div class="review">';
+      S.wrong.forEach(function(q){h+='<div><p class="q">'+q.q+'</p><p>Réponse : <strong>'+q.o[0]+'</strong>'+(q.e?'. '+q.e:'')+' <span style="color:var(--muted)">('+CH[q.c]+')</span></p></div>';});
+      h+='</div>';
+    }
+    card.innerHTML=h;
+    var r=document.getElementById("qredo"); if(r) r.addEventListener("click",function(){start(shuffle(S.wrong));});
+    document.getElementById("qnew").addEventListener("click",startFromControls);
+  }
+  document.getElementById("qcm-start").addEventListener("click",startFromControls);
+  startFromControls();
+})();
+</script>
+
+</html>
