@@ -3,6 +3,7 @@
 Cours et QCM pour réviser la partie Splunk de la SAE5Cyber03 (BUT3 RT) : TP noté sur les modules 3 à 13 de Splunk Fundamentals 1 et partiel en QCM.
 
 - **[Cours Splunk Fundamentals](https://nnexoss.github.io/revision-splunk/)** : 20 chapitres (installation, ingestion, recherche, champs, commandes SPL, rapports, dashboards, Pivot, lookups, alertes, compléments du Learning Path Splunk Academy), avec des quiz par chapitre.
-- **[QCM Splunk](https://nnexoss.github.io/revision-splunk/qcm.html)** : 164 questions, par chapitre ou sur tout le cours, avec reprise des erreurs.
+- **[QCM du cours](https://nnexoss.github.io/revision-splunk/qcm.html)** : 164 questions générales, par chapitre ou sur tout le cours, avec explications et reprise des erreurs.
+- **[QCM officiel](https://nnexoss.github.io/revision-splunk/qcm-officiel.html)** : les 111 questions des quiz du parcours Splunk Core Certified User (en anglais), avec réponses expliquées en français.
 
-Les chapitres 13 à 18 (Learning Path) ne viennent pas des supports du cours mais de la documentation Splunk.
+Les chapitres 13 à 18 du cours (Learning Path) ne viennent pas des supports du cours mais de la documentation Splunk. Les quiz officiels n'avaient pas de corrigé : leurs réponses ont été établies d'après la documentation Splunk.
