@@ -402,7 +402,7 @@ sudo -H -u splunk /opt/splunk/bin/splunk status</pre></div>
     <dt>Database</dt><dd>Requêtes SQL. Colonnes : <code>Time</code>, <code>Type</code>, <code>Command</code>, <code>Duration</code>.</dd>
   </dl>
 
-  <div class="note tp"><strong class="lbl">Important pour le TP</strong><p>Les données vont du <strong>27 juillet au 26 août 2023</strong>. Avec « Last 24 hours » tu n'auras <strong>aucun résultat</strong> : mets le sélecteur de temps sur <strong>All time</strong>.</p></div>
+  <div class="note tp"><strong class="lbl">Important pour le TP</strong><p>Les données couvrent <strong>30 jours passés</strong>, et leurs dates dépendent du téléchargement : 27/07 → 26/08/2023 dans les fichiers de ton dossier, 21/08 → 20/09/2026 dans l'instance Splunk de ton PC. Avec « Last 24 hours » tu n'auras <strong>aucun résultat</strong> : mets le sélecteur de temps sur <strong>All time</strong>.</p></div>
 
   <p>Après l'ingestion, le lab te fait te déconnecter puis te reconnecter avec le compte <em>power</em> et ouvrir l'app <strong>Search &amp; Reporting</strong> (<em>Skip</em> la visite guidée). Le nombre d'events indexés s'affiche.</p>
 
@@ -665,7 +665,7 @@ index=main sourcetype=access_combined_wcookie | stats values(useragent) as "Agen
     <details><summary>Combien de lignes <code>top</code> renvoie-t-il par défaut, et comment cacher le pourcentage ?</summary><div>10 lignes. <code>showperc=false</code>.</div></details>
     <details><summary>Différence entre <code>list()</code> et <code>values()</code> ?</summary><div><code>list</code> garde toutes les valeurs, doublons compris, dans l'ordre des events. <code>values</code> garde les valeurs distinctes, triées alphabétiquement.</div></details>
     <details><summary>Que compte <code>dc(JSESSIONID)</code> ?</summary><div>Le nombre de sessions différentes.</div></details>
-    <details><summary>Écris la requête : nombre d'échecs SSH par utilisateur, du plus grand au plus petit.</summary><div><code>index=main sourcetype=linux_secure "Failed password" | stats count by user | sort -count</code>. Sur tes données, <code>root</code> arrive en tête.</div></details>
+    <details><summary>Écris la requête : nombre d'échecs SSH par utilisateur, du plus grand au plus petit.</summary><div><code>index=main sourcetype=linux_secure "Failed password" | rex "for (invalid user )?(?&lt;user&gt;\S+) from (?&lt;src_ip&gt;\d+\.\d+\.\d+\.\d+) port (?&lt;port&gt;\d+)" | stats count by user | sort -count</code>. Le <code>rex</code> est indispensable : sans module complémentaire, Splunk n'extrait pas le champ <code>user</code> des logs SSH (vérifié sur ton instance). Sur tes données, <code>root</code> arrive en tête avec 7 283 échecs.</div></details>
   </div>
 </section>
 
@@ -884,14 +884,17 @@ index=main sourcetype=access_combined_wcookie file=success.do status=200
 
   <h3>Recherches sécurité sur tes données</h3>
   <div class="codebox"><pre class="spl"><span class="cm"># Brute force SSH : IP qui échouent le plus</span>
-index=main sourcetype=linux_secure "Failed password" | stats count by src_ip | sort -count
+index=main sourcetype=linux_secure "Failed password"
+| rex "for (invalid user )?(?&lt;user&gt;\S+) from (?&lt;src_ip&gt;\d+\.\d+\.\d+\.\d+) port (?&lt;port&gt;\d+)"
+| stats count by src_ip | sort -count
 
 <span class="cm"># Échecs dans le temps</span>
 index=main sourcetype=linux_secure "Failed password" | timechart span=1d count
 
 <span class="cm"># Erreurs web par code</span>
 index=main sourcetype=access_combined_wcookie status>=400 | stats count by status</pre></div>
-  <p>Sur tes fichiers : <code>root</code> est l'utilisateur le plus visé (≈7 300 échecs), puis <code>administrator</code> et <code>admin</code>. Les IP les plus actives sont <code>10.3.10.46</code> et <code>87.194.216.51</code>. Le nom exact du champ IP (<code>src_ip</code>, <code>src</code> ou <code>rhost</code>) dépend de l'extraction : regarde la barre des champs.</p>
+  <p>Sur tes fichiers : <code>root</code> est l'utilisateur le plus visé (≈7 300 échecs), puis <code>administrator</code> et <code>admin</code>. Les IP qui échouent le plus sont <code>87.194.216.51</code> (1 557 échecs) puis <code>211.166.11.101</code>.</p>
+  <div class="note piege"><strong class="lbl">Piège vérifié sur ton instance</strong><p>Pour <code>linux_secure</code>, Splunk n'extrait par défaut que quelques champs (<code>pid</code>, <code>process</code>…), pas l'utilisateur ni l'IP source. Sans le <code>rex</code> ci-dessus, <code>stats count by user</code> ou <code>by src_ip</code> renvoie un tableau vide. Regarde toujours la barre des champs avant d'écrire un <code>stats … by</code>.</p></div>
 
   <div class="quiz"><h3>Vérifie-toi</h3>
     <details><summary>Différence entre <code>search</code> et <code>where</code> après un pipe ?</summary><div><code>where</code> utilise une expression eval : il peut comparer deux champs (<code>where bytes &gt; avg_bytes</code>) et utiliser des fonctions. <code>search</code> utilise la syntaxe de recherche classique.</div></details>
@@ -1230,7 +1233,7 @@ index=main sourcetype=access_combined_wcookie | stats count by productId</pre></
 index=main sourcetype=linux_secure "Failed password"
 
 # L'utiliser
-eventtype=echec_ssh | stats count by user
+eventtype=echec_ssh | stats count by host
 
 # Chercher par tag
 tag=serveur_web
@@ -1310,7 +1313,8 @@ index=_audit action="login attempt" info=failed user=admin</pre></div>
     <tr><td>Fichier avec le moins de bande passante</td><td><strong>api</strong></td></tr>
     <tr><td>IP avec le plus d'erreurs 403</td><td><strong>73.202.92.7</strong> (100)</td></tr>
     <tr><td>Produit qui rapporte le plus (lookup)</td><td><strong>Dream Crusher</strong> (corrigé du lab)</td></tr>
-    <tr><td>Période des données</td><td>27/07/2023 → 26/08/2023</td></tr>
+    <tr><td>Période des données</td><td>30 jours ; dates selon le téléchargement (21/08 → 20/09/2026 sur ton instance)</td></tr>
+    <tr><td>Utilisateur SSH le plus visé (avec <code>rex</code>)</td><td><strong>root</strong> (7 283 échecs)</td></tr>
   </table></div>
   <p>Ces chiffres valent si chacun des trois fichiers est ingéré une seule fois, avec All time. Si tu ingères un fichier deux fois, tout est doublé. Le jour du TP, le jeu de données peut être différent : retiens la méthode plus que les chiffres.</p>
 
